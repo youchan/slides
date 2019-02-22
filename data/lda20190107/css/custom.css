@@ -1,0 +1,33 @@
+.gibier .page_0 p.icon {
+  margin: 0;
+  position: relative;
+  left: 32em;
+  top: -3em;
+}
+
+.gibier .slide {
+  color: #000000;
+}
+
+.gibier .background {
+  background-color: #FFFFFF;
+}
+
+.fig {
+  margin: 0 auto;
+  width: 36rem;
+}
+
+.fig img {
+  width: 100%;
+}
+
+.kakomi {
+  margin: 0 auto;
+  width: 42rem;
+}
+
+.kakomi img {
+  width: 100%;
+}
+
