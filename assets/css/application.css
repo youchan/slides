@@ -16,7 +16,12 @@ body {
   top: 0;
   width: 100%;
   height: 100%;
-  font-size: 40px;
+  font-size: 44px;
+}
+
+.gibier code {
+  font-family: 'Inconsolata', monospace;
+  background-color: #aa6666;
 }
 
 .gibier .background {
@@ -108,8 +113,8 @@ body {
 .page p.icon {
   margin: 0;
   position: absolute;
-  top: 5.7em;
-  left: 25em;
+  top: -0.5em;
+  left: 30em;
 }
 
 .page p.icon img {
@@ -209,6 +214,27 @@ body {
   width: 20em;
 }
 
+.page p.portlait-right {
+  text-align: right;
+  font-size: 1.6em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.page p.portlait-right img {
+  width: 30%;
+  margin-top: 12%;
+  float: right;
+}
+
+.page .left ~ * {
+  position: relative;
+  float: left;
+  margin-top: 12%;
+  margin-left: 2em;
+  width: 60%;
+}
+
 .page p.w90 {
   text-align: center;
   font-size: 1.6em;
@@ -237,11 +263,32 @@ body {
   font-size: 1.6em;
   font-weight: bold;
   margin: 0;
-  margin-top: 4em;
 }
 
 .page p.w50 img {
   width: 50%;
+}
+
+.page p.w30 {
+  text-align: center;
+  font-size: 1.6em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.page p.w30 img {
+  width: 30%;
+}
+
+.page p.w10 {
+  text-align: center;
+  font-size: 1.6em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.page p.w10 img {
+  width: 10%;
 }
 
 h1 {
@@ -361,4 +408,8 @@ a:active {
 
 .duration {
   display: none;
+}
+
+.center {
+  text-align: center;
 }
