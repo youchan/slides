@@ -1,0 +1,28 @@
+.gibier .background {
+  background-color: #FFFFFF;
+}
+
+.gibier .slide {
+  color: #444444;
+}
+
+.gibier .page_0 p.icon {
+  margin: 0;
+  position: relative;
+  left: 32em;
+  top: -3em;
+}
+
+.centering ~ * {
+  text-align: center;
+}
+
+.hobby {
+  font-size: 140%;
+  text-align: center;
+}
+
+.hobby strong {
+  font-size: 180%;
+  color: #FF4444;
+}
