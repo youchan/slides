@@ -169,6 +169,17 @@ body {
   width: 80%;
 }
 
+.page p.full {
+  text-align: center;
+  font-size: 1.6em;
+  font-weight: bold;
+  margin: 3.6em 0 0 0;
+}
+
+.page p.full img {
+  height: -webkit-fill-available;
+}
+
 .page p.middle {
   text-align: center;
   font-size: 1.6em;
