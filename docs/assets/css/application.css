@@ -280,6 +280,17 @@ body {
   width: 50%;
 }
 
+.page p.w40 {
+  text-align: center;
+  font-size: 1.6em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.page p.w40 img {
+  width: 40%;
+}
+
 .page p.w30 {
   text-align: center;
   font-size: 1.6em;
