@@ -1,0 +1,23 @@
+.page p.pdp {
+  position: relative;
+  float: left;
+  margin: 0 20px;
+  left: 500px;
+}
+
+.page p.pdp img {
+  height: 200px;
+}
+
+.page p.forest {
+  position: relative;
+  float: left;
+  margin: 0 20px;
+  left: 300px;
+}
+
+.page p.forest img {
+  height: 200px;
+}
+
+
