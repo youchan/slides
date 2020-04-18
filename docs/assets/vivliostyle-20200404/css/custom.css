@@ -1,0 +1,39 @@
+.gibier .background {
+  background-color: #ffffea;
+}
+
+.gibier .background-filter {
+  background-image: url(../images/vivliostyle-background.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.gibier .page-container {
+  color: #ffffea;
+  font-size: 4rem;
+}
+
+.gibier .page-header {
+  margin: 0;
+}
+
+.gibier .page_0 .page-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100vh !important;
+}
+
+.small {
+  margin-top: 3em;
+  font-size: 0.8em;
+}
+
+.page .left ~ * {
+  margin-left: 0;
+  margin-top: 8%;
+}
+
+.page p.portlait-right img {
+  margin-top: 8%;
+}
