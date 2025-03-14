@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="/css/highlight.css">
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <div class="page-container"></div>
+    <script type="module">
+      import { DefaultRubyVM } from "https://cdn.jsdelivr.net/npm/@ruby/wasm-wasi@2.7.1/dist/browser/+esm";
+      const response = await fetch("/dist/app.wasm");
+      const module = await WebAssembly.compileStreaming(response);
+      const { vm } = await DefaultRubyVM(module);
+
+      document.shared = {}
+
+      document.addEventListener('keydown', function(e) {
+        let keyCode = e.keyCode;
+        vm.evalAsync(`
+          pages = Pages.pages
+          page_container = JS.global[:document].getElementsByClassName('page-container')[0]
+          case ${keyCode}
+          when 39
+            page = pages.next.await
+            page_container[:innerHTML] = page.to_html.await
+          when 37
+            page = pages.prev.await
+            page_container[:innerHTML] = page.to_html.await
+          end
+        `);
+      });
+
+      vm.evalAsync(`
+        require_relative 'src/hello'
+      `);
+    </script>
+  </body>
+</html>
+
