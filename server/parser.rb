@@ -132,7 +132,7 @@ module Gibier2
     end
 
     def to_html
-      "<img src='#{@url}' alt='#{@caption}' />"
+      "<a class='#{@caption}'><img src='#{@url} /></a>"
     end
   end
 
