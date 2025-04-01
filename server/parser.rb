@@ -5,9 +5,9 @@ require 'drb'
 
 module Gibier2
   class Pages
-    def initialize(pages)
+    def initialize(pages, page_num=0)
       @pages = pages
-      @page_num = 0
+      @page_num = page_num
     end
 
     def page(n)
@@ -16,7 +16,7 @@ module Gibier2
     end
 
     def current
-      DRb::DRbObject.new(@pages[@page_num])
+      @pages[@page_num]
     end
 
     def next
@@ -31,6 +31,15 @@ module Gibier2
         @page_num -= 1
       end
       current
+    end
+
+    def marshal_dump
+      [@pages, @page_num]
+    end
+
+    def marshal_load(obj)
+      @pages = obj[0]
+      @page_num = obj[1]
     end
   end
 
@@ -162,20 +171,11 @@ module Gibier2
     attr_reader :title
     attr_reader :id
 
-    def self.page_num
-      @page_num ||= 0
-    end
-
-    def self.inc_page_num
-      @page_num = page_num + 1
-    end
-
-    def initialize(header)
-      Page.inc_page_num
+    def initialize(header, page_num)
       @level = header.header_level
       title = extract_text(header.extract_children)
       (@title, id) = extract_id(title)
-      @id = id || "page#{Page.page_num}"
+      @id = id || "page#{page_num}"
       @contents = []
     end
 
@@ -219,8 +219,12 @@ module Gibier2
       end.join
     end
 
+    def marshal_dump
+      to_html
+    end
+
     def to_html
-      <<~HEML
+      @html ||= <<~HEML
         <div class='page' id='#{id}'>
         #{"<h#{@level}>#{title}</h#{@level}>" if title.length > 0}
         #{contents_html}
@@ -236,7 +240,8 @@ module Gibier2
       doc.each do |node|
         case node.type
         when :header
-          page = Page.new(node)
+          page = Page.new(node, pages.count + 1)
+
           pages << page
         else
           pages.last << node if pages.last

@@ -18,7 +18,7 @@ class Gibier
 end
 
 DRb::WebSocket::RackApp.config.use_rack = true
-DRb.start_service("ws://127.0.0.1:9161", Gibier.pages)
+DRb.start_service("ws://127.0.0.1:9161", Gibier)
 
 app = DRb::WebSocket::RackApp.new(Proc.new {|env|
   case path = env['REQUEST_PATH']

@@ -34,15 +34,15 @@
       document.addEventListener('keydown', function(e) {
         let keyCode = e.keyCode;
         vm.evalAsync(`
-          pages = Pages.pages
+          pages = Pages.pages.await
           slide = JS.global[:document].getElementsByClassName('slide')[0]
           case ${keyCode}
           when 39
-            page = pages.next.await
-            slide[:innerHTML] = page.to_html.await
+            page = pages.next
+            slide[:innerHTML] = page.to_html
           when 37
-            page = pages.prev.await
-            slide[:innerHTML] = page.to_html.await
+            page = pages.prev
+            slide[:innerHTML] = page.to_html
           end
 
           page_el = JS.global[:document].getElementsByClassName('page')[0]
@@ -57,14 +57,19 @@
       vm.evalAsync(`
         require 'js'
         require 'wasm_drb'
+        require_relative 'src/pages'
 
-        class Pages
-          def self.pages
-            @pages ||= DRb::DRbObject.new_with_uri 'ws://127.0.0.1:9161'
-          end
-        end
+        pages = Pages.pages.await
+        page = pages.current
+        slide = JS.global[:document].getElementsByClassName('slide')[0]
+        slide[:innerHTML] = page.to_html
 
-        DRb.start_service("ws://127.0.0.1:9161/callback")
+        page_el = JS.global[:document].getElementsByClassName('page')[0]
+        page_el[:style][:width] = '${SLIDE_WIDTH}px'
+        page_el[:style][:height] = '${SLIDE_HEIGHT}px'
+        page_el[:style][:top] = '${top}px'
+        page_el[:style][:left] = '${left}px'
+        page_el[:style][:zoom] = '${zoom}'
       `);
     </script>
   </body>

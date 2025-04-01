@@ -1,14 +1,8 @@
-# ruby.wasmのはじめかた {#cover}
+# dRuby on Browser Again!
 
 youchan
 
 ![youchan](images/youchan_square.jpeg)
-
-## 今日のはなし
-
-- ruby.wasmってなに？
-- 超かんたんruby.wasmのはじめかた
-- もっとruby.wasm
 
 ## Who am I
 
@@ -20,141 +14,70 @@ youchan
   - Isomorphic web programming in Ruby (2016)
   - dRuby on Browser (2017)
 
-## RubyKaigi 2025 {#rubykaigi2025}
+## What's ruby.wasm
 
-"dRuby on Browser Again!"
+## What's dRuby
 
-## ruby.wasmってなに？ {#whats_ruby_wasm}
+## Why dRuby with ruby.wasm
 
-![What's ruby.wasm](images/whats_ruby.wasm.png)
+## Introduce drb-websocket/wasm_drb
 
-## wasmはブラウザで動く
+- drb-websocket
+  - dRuby WebSocket protocol
+- wasm_drb
+  - dRuby implementation for ruby.wasm
 
-![wasm VM](images/wasm_vm.png)
+## drb-websocket
 
-## CRubyのコンパイル
+* WebSocket protocol plugin for dRuby.
+* Using **faye-websocket**
+* Standalone mode or Rack middleware mode
 
-![compile ruby](images/compile_ruby.png)
+## Rack middleware mode
 
-## Rubyがブラウザで動く
-
-![Ruby on Browser](images/ruby_on_browser.png)
-
-## 超かんたんruby.wasmのはじめかた
-
-```html
-<html>
-  <script src="https://cdn.jsdelivr.net/npm/@ruby/3.4-wasm-wasi@2.7.1/dist/browser.script.iife.js"></script>
-  <script type="text/ruby">
-    require "js"
-    JS.global[:document].write "Hello, world!"
-  </script>
-</html>
+```ruby
+app = Rack::Builder.app do
+  server = Server.new(host: 'localhost')
+  map '/' do
+    use DRb::WebSocket::RackApp
+    run server
+  end
+end
 ```
 
-## その他の方法
+---
 
-- [TryRuby](https://try.ruby-lang.org/playground/#code=puts+RUBY_DESCRIPTION&engine=cruby-3.3.0)
-- [P5.rb](https://p5rb.ongaeshi.me/editor/?q=CYUwZgBAziAuCuAHAUBCBjATiAhrEAwjgHYBuOUAFAOwCMADADQQAs99AlKhPgB6wBlAJYAvEJQBMnbn1iUASgFUAQgE0A%2BgBEAogILyAkgAUAKgYDyAOWZMIDZtXZcQxYMiA)
-- [irb.wasm](https://irb-wasm.vercel.app/)
+![large](protocol.png)
 
-## wasmtimeで実行する
+## wasm-drb
 
-https://github.com/ruby/ruby.wasm
+* dRuby client **and server** implementation in ruby.wasm
 
-```
-$ gem install ruby_wasm
-# Download a prebuilt Ruby release
-$ curl -LO https://github.com/ruby/ruby.wasm/releases/latest/download/ruby-3.4-wasm32-unknown-wasip1-full.tar.gz
-$ tar xfz ruby-3.4-wasm32-unknown-wasip1-full.tar.gz
+## Callbacks
 
-# Extract ruby binary not to pack itself
-$ mv ruby-3.4-wasm32-unknown-wasip1-full/usr/local/bin/ruby ruby.wasm
+```ruby
+remote = DRbObject.new_with_uri 'ws://127.0.0.1:1234'
+DRbObject.start_service # Run as server
 
-# Put your app code
-$ mkdir src
-$ echo "puts 'Hello'" > src/my_app.rb
-
-# Pack the whole directory under /usr and your app dir
-$ rbwasm pack ruby.wasm --dir ./src::/src --dir ./ruby-3.4-wasm32-unknown-wasip1-full/usr::/usr -o my-ruby-app.wasm
-
-# Run the packed scripts
-$ wasmtime my-ruby-app.wasm /src/my_app.rb
-Hello
+remote.each do |x|
+  x.do_something # This is running on client
+end
 ```
 
-## prebuiltのruby.wasmをブラウザで実行する
+## Callbacks
 
-```html
-<html>
-  <script type="module">
-    import { DefaultRubyVM } from "https://cdn.jsdelivr.net/npm/@ruby/wasm-wasi@2.7.1/dist/browser/+esm";
-    const response = await fetch("ruby.wasm");
-    const module = await WebAssembly.compileStreaming(response);
-    const { vm } = await DefaultRubyVM(module);
+![large](callbacks.png)
 
-    vm.eval(`
-      require "js"
-      JS.global[:document].write "Hello, world!"
-    `);
-  </script>
-</html>
-```
+## Demo
 
-## {#think}
+## Gibier2
 
-![think](images/think.png)
+## Async probrems
+- JS <=> Ruby をまたがると問題多い
+- Change the interfaces between marshalable or not
+  - if it is not marshalable, the method returns Promise object.
 
-## もっとruby.wasm
-- スタンダードライブラリが使えない(cdnのもの)
-- prebuiltのruby.wasmがブラウザで使えない
-  - 自分で書いたソースファイルを添付(pack)できない
-- gemを使えるとうれしい
+## Async probrems(JS <=> Ruby)
 
-## ruby.wasmのビルド
+TODO: 簡単な再現コード(イベントハンドラからawaitを呼ぶ)
 
-```
-$ bundle init
-$ bundle add ruby_wasm
-
-# Build a ruby.wasm
-$ bundle exec rbwasm build -o ruby.wasm
-```
-
-## wasmtimeで実行する
-
-```
-$ wasmtime ruby.wasm -e 'puts "Hello"'
-Hello
-```
-
-## JS gemを追加する
-
-```
-$ bundle add js
-
-# Re-build the ruby.wasm
-$ bundle exec rbwasm build -o ruby.wasm
-```
-
-## ブラウザで実行できました！ {#tada}
-
-![tada](images/tada.png)
-
-## gemを追加してみる
-
-```
-$ bundle add redcarpet
-
-# Re-build the ruby.wasm
-$ bundle exec rbwasm build -o ruby.wasm
-```
-
-## まとめ
-
-- ruby.wasmとは何か？を解説しました。
-- 超かんたんな入門方法を紹介しました。
-- wasmtimeでcli上でruby.wasmを実行したり、スクリプトファイルを同梱したり、好きなgemを組み込んだruby.wasmを作ったりして遊びました。
-
-## {#lets_enjoy}
-Let's enjoy ruby.wasm!
