@@ -51,8 +51,13 @@ module Gibier2
         case n.type
         when :text
           text << n.string_content
+        when :strong
+          text << "<strong>#{extract_text(n)}</strong>"
         when :paragraph
-          text << extract_text(n)
+          n.each do |child|
+            text << extract_text(child)
+          end
+          puts text
         when :inline_html
           text << n.string_content
         when :link
@@ -63,6 +68,7 @@ module Gibier2
       text
     end
 
+    module_function :extract_text
   end
 
   class TextContent
@@ -71,11 +77,30 @@ module Gibier2
     attr_reader :text
 
     def initialize(node)
-      @text = extract_text(node)
+      @strong = true if node.type == :strong
+      (@text, @class_name) = extract_class_name(extract_text(node))
+    end
+
+    def extract_class_name(text)
+      if text =~ /\A%\w+:/
+        class_name = text[1...text.index(':')]
+        text = text[(text.index(':') + 1)...text.length]
+        [text, class_name]
+      else
+        [text, nil]
+      end
     end
 
     def to_html
-      "<p>#{@text}</p>"
+      classes = []
+      classes << @class_name if @class_name
+      classes << 'strong' if @strong
+
+      if classes.length > 0
+        "<span class='#{classes.join(' ')}'>#{@text}</span>"
+      else
+        "<span>#{@text}</span>"
+      end
     end
   end
 
@@ -141,7 +166,7 @@ module Gibier2
     end
 
     def to_html
-      "<a class='#{@caption}'><img src='#{@url} /></a>"
+      "<p class='#{@caption}'><img src='#{@url}' /></p>"
     end
   end
 
@@ -171,15 +196,23 @@ module Gibier2
     attr_reader :title
     attr_reader :id
 
-    def initialize(header, page_num)
-      @level = header.header_level
-      title = extract_text(header.extract_children)
-      (@title, id) = extract_id(title)
-      @id = id || "page#{page_num}"
+    def self.from_header(header, page_num)
+      (title, id) = self.extract_id(Content.extract_text(header.extract_children))
+      self.new(title, header.header_level, id || "page#{page_num}")
+    end
+
+    def self.empty(page_num)
+      self.new('', 0, "page#{page_num}")
+    end
+
+    def initialize(title, level, id)
+      @title = title
+      @level = level
+      @id = id
       @contents = []
     end
 
-    def extract_id(title)
+    def self.extract_id(title)
       id = nil
       if m = /\{\#(.+)\}\s*$/.match(title)
         id = m[1]
@@ -197,6 +230,8 @@ module Gibier2
         end
         content
       when :text
+        TextContent.new(node)
+      when :strong
         TextContent.new(node)
       when :list
         ListContent.new(node)
@@ -226,8 +261,10 @@ module Gibier2
     def to_html
       @html ||= <<~HEML
         <div class='page' id='#{id}'>
-        #{"<h#{@level}>#{title}</h#{@level}>" if title.length > 0}
-        #{contents_html}
+        #{"<h#{@level} class='page-header'>#{title}</h#{@level}>" if title.length > 0}
+          <div class='page-content'>
+            #{contents_html}
+          </div>
         </div>
       HEML
     end
@@ -238,13 +275,21 @@ module Gibier2
       pages = []
       doc = Markly.parse(content)
       doc.each do |node|
+        begin
         case node.type
         when :header
-          page = Page.new(node, pages.count + 1)
+          page = Page.from_header(node, pages.count + 1)
+
+          pages << page
+        when :hrule
+          page = Page.empty(pages.count + 1)
 
           pages << page
         else
           pages.last << node if pages.last
+        end
+        rescue => e
+          pp e
         end
       end
       Pages.new(pages)

@@ -1,8 +1,8 @@
-# dRuby on Browser Again!
+# dRuby on Browser Again! {#cover}
 
-youchan
+%author: Yoh Osaki a.k.a @youchan
 
-![youchan](images/youchan_square.jpeg)
+![icon](images/youchan_square.jpeg)
 
 ## Who am I
 
@@ -13,6 +13,12 @@ youchan
   - Writing web application in Ruby (2015)
   - Isomorphic web programming in Ruby (2016)
   - dRuby on Browser (2017)
+
+# dRuby on Browser Again!
+
+---
+
+![ruby.wasm loves dRuby](images/ruby.wasm_loves_dRuby.png)
 
 ## What's ruby.wasm
 
@@ -40,14 +46,14 @@ app = Rack::Builder.app do
   server = Server.new(host: 'localhost')
   map '/' do
     use DRb::WebSocket::RackApp
-    run server
   end
+  run server
 end
 ```
 
 ---
 
-![large](protocol.png)
+![large](images/protocol.png)
 
 ## wasm-drb
 
@@ -66,7 +72,7 @@ end
 
 ## Callbacks
 
-![large](callbacks.png)
+![large](images/callbacks.png)
 
 ## Demo
 
@@ -140,6 +146,8 @@ puts socket.gets  # => "Hello from the browser!"
 socket.puts "Hello from CRuby!"
 ```
 
+---
+
 Browser Client (ruby.wasm)
 
 ```ruby
@@ -207,6 +215,8 @@ prepend JavaScript::WebSocket if defined? JS
 ##  Waiting for Asynchronous APIs
 
 This is a very interesting aspect that's characteristic of Ruby in the browser. The JS gem in ruby.wasm has a feature called Promise Scheduler. This allows you to wait for a Promise to complete. If you can call Promise.resolve method from the callback function of an asynchronous API, you can wait for the asynchronous API to complete.
+
+---
 
 In a generalized form, it looks like this:
 

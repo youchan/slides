@@ -1,0 +1,27 @@
+.page {
+  background-image: url("/images/background.png");
+  color: #222;
+}
+
+#cover {
+  background-image: url("/images/background_cover.png");
+  color: #fff;
+}
+
+#cover .page-header {
+  top: 20%;
+}
+
+.slide .page-header {
+  margin-top: 2em;
+  margin-bottom: 1em;
+}
+
+#cover .author {
+  margin-top: 4em;
+}
+
+#cover .icon {
+  position: relative;
+  left: 25em; 
+}

@@ -18,10 +18,7 @@ end
 
 height = JS.global[:window][:innerHeight].to_f
 width = JS.global[:window][:innerWidth].to_f
-p [height, width]
 zoom = (height / width < SLIDE_HEIGHT.to_f / SLIDE_WIDTH.to_f) ?  height / SLIDE_HEIGHT : width / SLIDE_WIDTH
-puts ?#*30
-p zoom
 
 top = (height / zoom - SLIDE_HEIGHT) / 2
 left = (width / zoom - SLIDE_WIDTH) / 2
@@ -44,6 +41,5 @@ JS.global[:document].addEventListener('keydown') do |e|
 end
 
 pages = Pages.pages.await
-p pages
 page = pages.current
 update_page(page, top, left, zoom)

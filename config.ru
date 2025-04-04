@@ -26,7 +26,7 @@ app = DRb::WebSocket::RackApp.new(Proc.new {|env|
     html = File.read('./index.html')
     [200, { 'content-type' => 'text/html' }, [html] ]
   when '/dist/app.wasm'
-    js = File.read('../dist/app.wasm')
+    js = File.read('./dist/app.wasm')
     [200, { 'content-type' => 'application/wasm' }, [js] ]
   when '/css/highlight.css'
     css = Rouge::Themes::Base16.mode(:dark).render(scope: '.highlight')
