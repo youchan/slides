@@ -2,6 +2,9 @@
 
 source "https://rubygems.org"
 
-gem "ruby_wasm", "~> 2.7.1"
-gem "js", "~> 2.7.1"
-gem "wasm_drb"
+gem 'rackup'
+gem 'webrick'
+gem 'drb'
+gem 'drb-websocket'
+gem "markly", "~> 0.12.1"
+gem "rouge", "~> 4.5"
