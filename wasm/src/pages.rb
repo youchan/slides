@@ -1,5 +1,6 @@
 require 'js'
 require 'wasm_drb'
+require 'uri'
 
 module Gibier2
   class Page
@@ -52,8 +53,14 @@ module Gibier2
   end
 end
 
-Factory = DRb::DRbObject.new_with_uri 'ws://127.0.0.1:9161'
-DRb.start_service("ws://127.0.0.1:9161/callback")
+uri = URI.parse(JS.global[:window][:location].to_s)
+scheme = uri.scheme == 'https' ? 'wss' : 'ws'
+ws_uri = uri.port ? "#{scheme}://#{uri.host}:#{uri.port}" : "#{scheme}://#{uri.host}"
+
+puts ws_uri
+
+Factory = DRb::DRbObject.new_with_uri ws_uri
+DRb.start_service("#{ws_uri}/callback")
 
 class Pages
   def self.pages

@@ -8,3 +8,5 @@ gem 'drb'
 gem 'drb-websocket'
 gem "markly", "~> 0.12.1"
 gem "rouge", "~> 4.5"
+gem "rake"
+gem 'ruby_wasm'
