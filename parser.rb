@@ -45,23 +45,19 @@ module Gibier2
 
   module Content
     def extract_text(node)
-      return node.string_content if node.type == :text
       text = ''
-      node.each do |n|
-        case n.type
-        when :text
-          text << n.string_content
-        when :strong
-          text << "<strong>#{extract_text(n)}</strong>"
-        when :paragraph
-          n.each do |child|
-            text << extract_text(child)
-          end
-          puts text
-        when :inline_html
-          text << n.string_content
-        when :link
-          text << "<a href='#{n.url}'>#{extract_text(n)}</a>"
+      case node.type
+      when :text
+        text << node.string_content
+      when :strong, :emph
+        text << "<span class='strong'>#{extract_text(node.extract_children)}</span>"
+      when :inline_html
+        text << node.string_content
+      when :link
+        text << "<a href='#{node.url}'>#{extract_text(node.extract_children)}</a>\n"
+      when :custom_inline
+        node.each do |n|
+          text << extract_text(n)
         end
       end
 
@@ -71,13 +67,38 @@ module Gibier2
     module_function :extract_text
   end
 
+  class ParagraphContent
+    include Content
+
+    def initialize(node)
+      @contents = []
+    end
+
+    def <<(content)
+      @contents << content
+    end
+
+    def string_content
+      @contents.map(&:to_html).join
+    end
+
+    def to_html
+      return '' if @contents.length == 0
+      <<~CONTENT
+        <p>
+          #{string_content}
+        </p>
+      CONTENT
+    end
+  end
+
   class TextContent
     include Content
 
     attr_reader :text
 
     def initialize(node)
-      @strong = true if node.type == :strong
+      @strong = true if [:strong, :emph].include?(node.type)
       (@text, @class_name) = extract_class_name(extract_text(node))
     end
 
@@ -94,12 +115,11 @@ module Gibier2
     def to_html
       classes = []
       classes << @class_name if @class_name
-      classes << 'strong' if @strong
 
       if classes.length > 0
-        "<span class='#{classes.join(' ')}'>#{@text}</span>"
+        "<div class='#{classes.join(' ')}'>#{@text}</div>"
       else
-        "<span>#{@text}</span>"
+        @text
       end
     end
   end
@@ -111,14 +131,17 @@ module Gibier2
       node.each.map do |child|
         case child.type
         when :paragraph
-          @text_content = extract_text(child)
+          @text = ''
+          child.each do |cc|
+            @text << extract_text(cc)
+          end
         when :list
           @list_content = ListContent.new(child)
         end
       end
 
       def to_html
-        html = "<li>#{@text_content}</li>"
+        html = "<li>#{@text}</li>"
         if @list_content
           html += "\n" + @list_content.to_html
         end
@@ -162,11 +185,25 @@ module Gibier2
 
     def initialize(node)
       @url = node.url
-      @caption = extract_text(node)
+      @caption = extract_text(node.extract_children)
     end
 
     def to_html
-      "<p class='#{@caption}'><img src='#{@url}' /></p>"
+      "<div class='#{@caption}'><img src='#{@url}' /></div>"
+    end
+  end
+
+  class LinkContent
+    include Content
+
+    def initialize(node)
+      p node
+      @url = node.url
+      @content = extract_text(node.extract_children)
+    end
+
+    def to_html
+      "<a href='#{@url}'>#{@content}</a>"
     end
   end
 
@@ -187,6 +224,15 @@ module Gibier2
         CGI.escapeHTML(@code).gsub(/\n/, '</br>').gsub(/\s/, '&nbsp;')
       end
       "<pre class='highlight'>\n#{code_html}</pre>"
+    end
+  end
+
+  class SoftbreakContent
+    def initialize(node)
+    end
+
+    def to_html
+      '</br>'
     end
   end
 
@@ -224,14 +270,12 @@ module Gibier2
     def extract_content(node)
       case node.type
       when :paragraph
-        content = nil
+        content = ParagraphContent.new(node)
         node.each do |child|
-          content = extract_content(child)
+          content << extract_content(child)
         end
         content
-      when :text
-        TextContent.new(node)
-      when :strong
+      when :text, :strong, :emph
         TextContent.new(node)
       when :list
         ListContent.new(node)
@@ -240,6 +284,9 @@ module Gibier2
       when :code_block
         CodeContent.new(node)
       when :link
+        LinkContent.new(node)
+      when :softbreak
+        SoftbreakContent.new(node)
       end
     end
 
@@ -250,8 +297,8 @@ module Gibier2
 
     def contents_html
       @contents.map do |c|
-        c.to_html + "\n"
-      end.join
+        c.to_html
+      end.join("\n")
     end
 
     def marshal_dump
@@ -267,6 +314,8 @@ module Gibier2
           </div>
         </div>
       HEML
+    rescue => e
+      pp e
     end
   end
 

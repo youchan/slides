@@ -1,9 +1,6 @@
 # dRuby on Browser Again! {#cover}
-
 %author: Yoh Osaki a.k.a @youchan
-
 ![icon](images/youchan_square.jpeg)
-
 ## Who am I
 
 - youchan
@@ -32,24 +29,27 @@
 
 ## No need JSON API
 
+![No need JSON API](images/no_need_json_api.png)
+
 ## Easy to share objects inter browsers
+
+![Share objects](images/share_objects.png)
 
 # Demo
 
 ## Introduce drb-websocket/wasm_drb
 
 - drb-websocket
-  - dRuby WebSocket protocol
+  - WebSocket protocol plugin for dRuby.
+  - Using faye-websocket
+  - Standalone mode or Rack middleware mode
 - wasm_drb
   - dRuby implementation for ruby.wasm
-
-## drb-websocket
-
-* WebSocket protocol plugin for dRuby.
-* Using **faye-websocket**
-* Standalone mode or Rack middleware mode
+  - dRuby client **and server** implementation in ruby.wasm
 
 ## Rack middleware mode
+
+drb-websocket has the Rack middleware mode.
 
 ```ruby
 app = Rack::Builder.app do
@@ -61,30 +61,20 @@ app = Rack::Builder.app do
 end
 ```
 
----
-
-![large](images/protocol.png)
-
-## wasm-drb
-
-* dRuby client **and server** implementation in ruby.wasm
-
 ## Callbacks
+
+wasm_drb has a server side implementation.
 
 ```ruby
 remote = DRbObject.new_with_uri 'ws://127.0.0.1:1234'
-DRbObject.start_service # Run as server
+DRbObject.start_service 'ws://127.0.0.1:1234/callback' # Run as a server
 
 remote.each do |x|
   x.do_something # This is running on client
 end
 ```
 
-## Callbacks
-
-![large](images/callbacks.png)
-
-## Demo
+# Demo
 
 ## Gibier2
 
@@ -96,15 +86,34 @@ end
 
 ## Async probrems
 
+Failure case.
 
-TODO: 簡単な再現コード(イベントハンドラからawaitを呼ぶ)
+```ruby
+button.addEventListener('click') do
+  remote.func.await # calling method of a stub object
+end
+```
+
+Correct as following
+
+```ruby
+buttonel.addEventListener('click') do
+  Fiber.new do
+    remote.func.await # calling method of a stub object
+  end.transfer
+end
+```
+
+# @ledsun's part
 
 ## Introduction
 
 My name is ledsun, a Rubyist who enjoys running Ruby in the browser using ruby.wasm as a hobby.
 Last year at RubyKaigi, I gave a talk on this topic.
-https://rubykaigi.org/2024/presentations/ledsun.html#day3
+[https://rubykaigi.org/2024/presentations/ledsun.html#day3](https://rubykaigi.org/2024/presentations/ledsun.html#day3)
 If you saw my talk last year, thank you! If not, don't worry—this year’s talk builds on it, but stands on its own.
+
+## Introduction
 
 This year, by coincidence, I was working on the same theme as youchan.
 I decided to borrow part of youchan's presentation time to share my work.
@@ -124,14 +133,12 @@ I created a library that abstracts WebSocket communications.
 It's a library that allows you to use WebSocket communication with the same interface from both CRuby and Ruby running in the browser.
 
 It's called Wands.
-https://rubygems.org/gems/wands
-
+[https://rubygems.org/gems/wands](https://rubygems.org/gems/wands)
 
 ## Wands Features
 
 The key feature of Wands is that it provides the same interface for WebSocket communication in both CRuby and the browser.
 It has an API similar to TCPSocket, which is commonly used in Ruby.
-
 
 ```ruby
 socket = Wands::WebSocket.open('localhost', 2345)
@@ -220,7 +227,7 @@ How is this possible?
 When running Wands in the browser, it depends on the JS gem. This allows us to switch WebSocket implementations based on whether the JS constant is defined or not. Specifically, we switch between CRuby and JavaScript using prepend.
 
 ```ruby
-# We dynamically override methods by prepending a module when running in browser.
+# We override methods dynamically by prepending a module in the browser.
 prepend JavaScript::WebSocket if defined? JS
 ```
 
@@ -250,10 +257,9 @@ end
 When writing a library for Ruby in the browser, one challenging aspect is how to run unit tests.
 You can't run them using only CRuby.
 On the other hand, launching a browser to execute tests is too cumbersome.
+In Wands, I run tests for JavaScript environment features using Node.js's Node WASI.This mechanism was referenced from ruby.wasm's unti test code.
 
-In Wands, I run tests for JavaScript environment features using Node.js's Node WASI.This mechanism was referenced from ruby.wasm's unti test code. After building the test execution environment myself, I was amazed that this mechanism was created during the ruby.wasm debut three years ago.
-
-## What Wands Abstracts
+## Socket programming in the browser
 
 Wands abstracts WebSocket communication in its implementation. Conceptually, it can also be said to abstract TCP sockets.
 

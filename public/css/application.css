@@ -413,3 +413,7 @@ th{
 table tr:nth-child(odd){
   background:#e6f2ff;
 }
+
+.strong {
+  font-weight: 600;
+}
