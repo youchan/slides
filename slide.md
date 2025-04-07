@@ -22,9 +22,19 @@
 
 ## What's ruby.wasm
 
+![what's ruby.wasm](images/whats_rubywasm.png)
+
 ## What's dRuby
 
-## Why dRuby with ruby.wasm
+![what's dRuby](images/whats_druby.png)
+
+# Why? dRuby with ruby.wasm
+
+## No need JSON API
+
+## Easy to share objects inter browsers
+
+# Demo
 
 ## Introduce drb-websocket/wasm_drb
 
@@ -79,11 +89,13 @@ end
 ## Gibier2
 
 ## Async probrems
-- JS <=> Ruby をまたがると問題多い
-- Change the interfaces between marshalable or not
-  - if it is not marshalable, the method returns Promise object.
+- The interface changes depending on whether it is stub object or not.
+  - If the object is a stub, a method call returns Promise object.
+- The back and forth between the world of wasm and the world of JS, is done through a complex mechanism.
+  - What works as a Fiber in the Ruby world is realized as a Promise in the JS world, and the two worlds are integrated by Asyncify.
 
-## Async probrems(JS <=> Ruby)
+## Async probrems
+
 
 TODO: 簡単な再現コード(イベントハンドラからawaitを呼ぶ)
 

@@ -1,7 +1,7 @@
-file 'dist/ruby.wasm' do
+file '../dist/ruby.wasm' do
   system('bundle exec rbwasm build -o ../dist/ruby.wasm')
 end
 
-task :build do
+task :build => ['../dist/ruby.wasm'] do
   system('bundle exec rbwasm pack ../dist/ruby.wasm --dir ./src::/src -o ../dist/app.wasm')
 end
