@@ -14,6 +14,8 @@ module Gibier2
   end
 
   class Pages
+    attr_reader :page_num
+
     def initialize(pages, page_num=0)
       @pages = pages
       @page_num = page_num
@@ -56,8 +58,6 @@ end
 uri = URI.parse(JS.global[:window][:location].to_s)
 scheme = uri.scheme == 'https' ? 'wss' : 'ws'
 ws_uri = uri.port ? "#{scheme}://#{uri.host}:#{uri.port}" : "#{scheme}://#{uri.host}"
-
-puts ws_uri
 
 Factory = DRb::DRbObject.new_with_uri ws_uri
 DRb.start_service("#{ws_uri}/callback")

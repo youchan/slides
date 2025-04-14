@@ -5,6 +5,9 @@ require_relative 'pages'
 SLIDE_WIDTH = 1920
 SLIDE_HEIGHT = 1080
 
+uri = JS.global[:window][:location].to_s
+base_uri = uri.sub(/#\d+$/, '')
+
 def update_page(page, top, left, zoom)
   slide = JS.global[:document].getElementsByClassName('slide')[0]
   slide[:innerHTML] = page.to_html
@@ -37,9 +40,11 @@ JS.global[:document].addEventListener('keydown') do |e|
     end
 
     update_page(page, top, left, zoom)
+    JS.global[:window][:location] = pages.page_num == 0 ? base_uri : base_uri + "##{pages.page_num}"
   end.transfer
 end
 
 pages = Pages.pages.await
-page = pages.current
+num = uri.match?(/#\d+$/) ? uri.match(/#(\d+)$/)[1].to_i : 0
+page = pages.page(num)
 update_page(page, top, left, zoom)
