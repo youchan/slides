@@ -9,20 +9,72 @@
 }
 
 #cover .page-header {
-  top: 20%;
+  top: 12%;
 }
 
 .slide .page-header {
   margin-top: 2em;
-  margin-bottom: 1em;
+}
+
+#cover .page-content {
+  position: relative;
+  margin-top: 3em;
 }
 
 #cover .author {
-  margin-top: 4em;
-  left: 25m;
+  position: relative;
+  float: right;
+  margin-top: 3em;
+  right: 3em;
 }
 
 #cover .icon {
   position: relative;
-  left: 25em; 
+  top: 10px;
+  left: 30em; 
+}
+
+#cover .icon img {
+  width: 128px;
+}
+
+.QR img {
+  margin: auto;
+  display: block;
+  width: 35%;
+}
+
+.whats_ruby_wasm img {
+  margin: auto;
+  display: block;
+}
+
+.whats_druby img {
+  margin: auto;
+  display: block;
+  width: 80%;
+}
+
+.No_need_JSON_API img {
+  margin: auto;
+  display: block;
+  width: 80%;
+}
+
+.Share_objects img {
+  margin: auto;
+  display: block;
+  width: 80%;
+}
+
+.gibier2 img {
+  margin: auto;
+  display: block;
+  width: 75%;
+}
+
+.center {
+  text-align: center;
+  font-size: 120%;
+  margin-top: 2em;
 }

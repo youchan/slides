@@ -1,6 +1,9 @@
 # dRuby on Browser Again! {#cover}
 %author: Yoh Osaki a.k.a @youchan
+%author: Shigeru Nakajima a.k.a @ledsun
 ![icon](images/youchan_square.jpeg)
+![icon](images/ledsun.png)
+
 ## Who am I
 
 - youchan
@@ -15,25 +18,25 @@
 
 ---
 
-![ruby.wasm loves dRuby](images/ruby.wasm_loves_dRuby.png)
+![ruby.wasm_loves_dRuby](images/ruby.wasm_loves_dRuby.png)
 
 ## What's ruby.wasm
 
-![what's ruby.wasm](images/whats_rubywasm.png)
+![whats_ruby_wasm](images/whats_rubywasm.png)
 
 ## What's dRuby
 
-![what's dRuby](images/whats_druby.png)
+![whats_dRuby](images/whats_druby.png)
 
 # Why? dRuby with ruby.wasm
 
 ## No need JSON API
 
-![No need JSON API](images/no_need_json_api.png)
+![No_need_JSON_API](images/no_need_json_api.png)
 
 ## Easy to share objects inter browsers
 
-![Share objects](images/share_objects.png)
+![Share_objects](images/share_objects.png)
 
 # Demo
 
@@ -74,9 +77,13 @@ remote.each do |x|
 end
 ```
 
-# Demo
+## Demo
+
+![QR](images/qr-niconico-drb.svg)
 
 ## Gibier2
+
+![gibier2](images/gibier2.png)
 
 ## Async probrems
 - The interface changes depending on whether it is stub object or not.
@@ -103,6 +110,14 @@ buttonel.addEventListener('click') do
   end.transfer
 end
 ```
+## Conclusion
+
+- The advantages of combining dRuby and ruby.wasm were explained.
+- I introduced `drb-websocket` and `wasm_drb`, a set of tools to realize dRuby in Browser.
+- The demonstrations and the tool were presented to show how it actually work.
+- I pointed out the asynchronous issues in ruby.wasm.
+
+%center: Enjoy next @ledsun's presentation.
 
 # @ledsun's part
 
