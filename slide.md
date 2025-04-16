@@ -8,6 +8,8 @@
 
 - youchan
 - ANDPAD Inc.
+  - RubyKaigi Platinum suponsor
+  - Ask the speaker => Day2 Lunch time 13:10～
 - Author of [Gibier](https://github.com/youchan/gibier)
 - RubyKaigi 2015～2017
   - Writing web application in Ruby (2015)

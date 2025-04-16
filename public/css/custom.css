@@ -78,3 +78,24 @@
   font-size: 120%;
   margin-top: 2em;
 }
+
+a:link {
+  color: #48e;
+  text-decoration: none;
+}
+
+a:visited {
+  color: #48e;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #48a;
+  text-decoration: underline;
+}
+
+a:active {
+  color: #48e;
+  text-decoration: none;
+}
+
