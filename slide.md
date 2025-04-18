@@ -4,6 +4,12 @@
 ![icon](images/youchan_square.jpeg)
 ![icon](images/ledsun.png)
 
+## Books
+
+%center: Sale on 2F book stores
+
+![books](images/books.png)
+
 ## Who am I
 
 - youchan

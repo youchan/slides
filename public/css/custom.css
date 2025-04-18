@@ -38,6 +38,12 @@
   width: 128px;
 }
 
+.books img {
+  margin: auto;
+  display: block;
+  width: 80%;
+}
+
 .QR img {
   margin: auto;
   display: block;
