@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="/css/highlight.css">
+    <link rel="stylesheet" href="/css/application.css">
+    <link rel="stylesheet" href="/css/custom.css">
+  </head>
+  <body>
+    <div class="gibier">
+      <div class="background">
+        <div class="background-filter">
+          <div class="slide-control">
+            <div class="page-back"></div>
+            <div class="page-foward"></div>
+            <div class="slide" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="loading">
+      <span class="loader"></span>
+    </div>
+    <script type="module">
+      import { DefaultRubyVM } from "https://cdn.jsdelivr.net/npm/@ruby/wasm-wasi@2.7.1/dist/browser/+esm";
+      const response = await fetch("/app.wasm");
+      const module = await WebAssembly.compileStreaming(response);
+      const { vm } = await DefaultRubyVM(module);
+
+      let el = document.getElementsByClassName('loading')[0];
+      el.remove();
+
+      vm.evalAsync(`
+        require_relative 'src/slide'
+      `);
+    </script>
+  </body>
+</html>
+
