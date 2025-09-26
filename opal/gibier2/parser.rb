@@ -1,4 +1,5 @@
 require_relative 'marked'
+require_relative 'rouge'
 
 module Gibier2
   class Pages
@@ -230,11 +231,11 @@ module Gibier2
 
     def initialize(node)
       @code = node.string_content
-      @type = node.fence_info
+      @fence_info = node.fence_info
     end
 
     def to_html
-      lexer = Rouge::Lexer.find(@type)
+      lexer = Rouge::Lexer.find(@fence_info)
       code_html = if lexer
         formatter = Rouge::Formatters::HTML.new
         formatter.format(lexer.lex(@code))
@@ -309,8 +310,6 @@ module Gibier2
           </div>
         </div>
       HTML
-    rescue => e
-      p e
     end
   end
 
@@ -319,7 +318,6 @@ module Gibier2
       pages = []
       doc = Marked.parse(content)
       doc.each do |node|
-        begin
         case node.type
         when :header
           page = Page.from_header(node, pages.count + 1)
@@ -331,9 +329,6 @@ module Gibier2
           pages << page
         else
           pages.last << node if pages.last
-        end
-        rescue => e
-          p e
         end
       end
       Pages.new(pages)

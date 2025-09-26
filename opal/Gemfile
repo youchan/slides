@@ -3,6 +3,4 @@
 source "https://rubygems.org"
 
 gem "opal"
-gem "markly", "~> 0.12.1"
-gem "rouge", "~> 4.5"
 gem "base64"

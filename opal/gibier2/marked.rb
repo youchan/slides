@@ -59,9 +59,20 @@ module Gibier2
           Node::Image.new(token)
         when 'link'
           Node::Link.new(token)
+        when 'code'
+          Node::Code.new(token)
+        when 'codespan'
+          Node::Code.new(token)
+        when 'strong'
+          Node::Strong.new(token)
+        when 'em'
+          Node::Em.new(token)
+        when 'hr'
+          Node::Hrule.new(token)
+        when 'space'
         else
-          # `console.log(token.native)`
-          # puts "type: #{n_token.type}"
+          `console.log(token.native)`
+          Node::Text.from_string(token.text)
         end
       end
 
@@ -105,7 +116,7 @@ module Gibier2
         end
 
         def string_content
-          @text
+          @text.gsub("\n", "<br/>\n")
         end
       end
 
@@ -119,7 +130,15 @@ module Gibier2
             `child.native['processed'] = true`
             node
           end.compact
+          text = false
           @text = token.text
+        end
+
+        def self.from_children(children)
+          ins = self.allocate
+          ins.instance_variable_set(:@children, children)
+          ins.instance_variable_set(:@type, :paragraph)
+          ins
         end
 
         def each(&block)
@@ -200,6 +219,70 @@ module Gibier2
 
         def extract_children
           @text
+        end
+      end
+
+      class Code
+        include Node
+
+        attr_reader :fence_info
+
+        def initialize(token)
+          @type = :code_block
+          @text = token.text
+          @fence_info = token.lang
+        end
+
+        def string_content
+          @text
+        end
+      end
+
+      class Strong
+        include Node
+
+        def initialize(token)
+          @type = :strong
+          @text = token.text
+          token.tokens.each do |child|
+            `child.native['processed'] = true`
+          end
+        end
+
+        def extract_children
+          Text.from_string @text
+        end
+      end
+
+      class Em
+        include Node
+
+        def initialize(token)
+          @type = :emph
+          @text = token.text
+          token.tokens.each do |child|
+            `child.native['processed'] = true`
+          end
+        end
+
+        def extract_children
+          Text.from_string @text
+        end
+      end
+
+      class Hrule
+        include Node
+
+        def initialize(token)
+          @type = :hrule
+        end
+      end
+
+      class Softbreak
+        include Node
+
+        def initialize
+          @type = :softbreak
         end
       end
     end
