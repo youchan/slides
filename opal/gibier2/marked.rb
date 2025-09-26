@@ -40,30 +40,28 @@ module Gibier2
       attr_reader :type
 
       def create_node(token)
-        if token.type == 'text'
-          `
-            if (token.native.text === 'youchan') {
-              console.log(token.native);
-            }
-          `
-        end
         return nil if `token.native['processed']`
 
         case token.type
         when 'heading'
           Node::Header.new(token)
         when 'text'
-          Node::Text.new(token)
+          if token.respond_to?(:tokens) && token.tokens.count > 1
+            Node::Paragraph.new(token)
+          else
+            Node::Text.new(token)
+          end
         when 'paragraph'
           Node::Paragraph.new(token)
         when 'list'
-          `console.log(token.native)`
           Node::List.new(token)
         when 'image'
           Node::Image.new(token)
+        when 'link'
+          Node::Link.new(token)
         else
-          #`console.log(token.native)`
-          #puts "type: #{n_token.type}"
+          # `console.log(token.native)`
+          # puts "type: #{n_token.type}"
         end
       end
 
@@ -168,6 +166,23 @@ module Gibier2
         def each(&block)
           return @items.each unless block_given?
           @items.each(&block)
+        end
+      end
+
+      class Link
+        include Node
+
+        attr_reader :url
+
+        def initialize(token)
+          @type = :link
+          @url = token.href
+          @text = Text.new(token)
+          token.tokens.each {|t| `t.native['processed'] = true`}
+        end
+
+        def extract_children
+          @text
         end
       end
 

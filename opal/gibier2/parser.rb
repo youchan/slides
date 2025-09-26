@@ -152,7 +152,7 @@ module Gibier2
         when :paragraph
           @text = ''
           child.each do |cc|
-            @text << extract_text(cc)
+            @text += extract_text(cc)
           end
         when :list
           @list_content = ListContent.new(child)

@@ -5,7 +5,6 @@ SLIDE_WIDTH = 1920
 SLIDE_HEIGHT = 1080
 
 uri = $$.location.toString
-p uri
 base_uri = uri.sub(/#\d+$/, '')
 
 def update_page(page, top, left, zoom)
