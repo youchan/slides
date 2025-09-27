@@ -1,4 +1,1 @@
-build/
-rubies/
-
-*.wasm
+slide.js
