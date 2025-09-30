@@ -15,12 +15,13 @@ bundle install
 
 Build ruby.wasm including necessary gems.
 ```sh
+cd wasm
 bundle exec rbwasm build -o dist/ruby.wasm
 ```
 
 Pack gibier2 source code into ruby.wasm
 ```sh
-bundle exec rbwasm pack ../dist/ruby.wasm --dir ./src::/src -o ../dist/app.wasm
+bundle exec rbwasm pack ../public/wasm/ruby.wasm --dir ./src::/src -o ../public/wasm/app.wasm
 ```
 
 Setup server-side

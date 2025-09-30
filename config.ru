@@ -8,12 +8,13 @@ CONTENT_TYPES = {
   '.jpg' => 'image/jpeg',
   '.jpeg' => 'image/jpeg',
   '.css' => 'text/css',
-  '.svg' => 'image/svg+xml'
+  '.svg' => 'image/svg+xml',
+  '.wasm' => 'application/wasm'
 }
 
 class Gibier
   def self.pages
-    markdown = File.read('slide.md')
+    markdown = File.read('slides/RubyKaigi2025/slide.md')
     Gibier2::Parser.parse(markdown)
   end
 end
@@ -28,15 +29,20 @@ app = DRb::WebSocket::RackApp.new(Proc.new {|env|
   when '/'
     html = File.read('./index.html')
     [200, { 'content-type' => 'text/html' }, [html] ]
-  when '/dist/app.wasm'
-    js = File.read('./dist/app.wasm')
-    [200, { 'content-type' => 'application/wasm' }, [js] ]
   when '/css/highlight.css'
     css = Rouge::Themes::Base16.mode(:dark).render(scope: '.highlight')
     [200, { 'content-type' => 'text/css' }, [css] ]
+  when '/RubyKaigi2025'
+    html = File.read('./index.html')
+    [200, { 'content-type' => 'text/html' }, [html] ]
   else
     if File.exist?('public' + path)
       content = File.read('public' + path)
+      ext = File.extname(path)
+      ctype = CONTENT_TYPES[ext]
+      [200, { 'content-type' => ctype }, [content]]
+    elsif File.exist?('public/RubyKaigi2025' + path)
+      content = File.read('public/RubyKaigi2025' + path)
       ext = File.extname(path)
       ctype = CONTENT_TYPES[ext]
       [200, { 'content-type' => ctype }, [content]]
