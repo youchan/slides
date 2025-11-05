@@ -42,8 +42,14 @@ $$.document.addEventListener('keydown') do |event|
   case e.keyCode
   when 39
     page = pages.next
+  when 34
+    page = pages.next
   when 37
     page = pages.prev
+  when 33
+    page = pages.prev
+  else
+    puts e.keyCode
   end
 
   update_page(page, top, left, zoom)

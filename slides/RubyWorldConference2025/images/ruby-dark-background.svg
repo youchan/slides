@@ -1,0 +1,235 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <!-- 背景 - 明るめの暗色に変更 -->
+  <rect width="1200" height="800" fill="#1e2130"/>
+  
+  <!-- マットなテクスチャ - ノイズパターン -->
+  <filter id="noise" x="0%" y="0%" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise"/>
+    <feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.03 0" in="noise" result="coloredNoise"/>
+    <feComposite operator="in" in="coloredNoise" in2="SourceGraphic" result="monoNoise"/>
+  </filter>
+  
+  <rect width="1200" height="800" fill="#2a2c3e" opacity="0.2" filter="url(#noise)"/>
+  
+  <!-- フィルター定義 -->
+  <defs>
+    <!-- ぼかし効果 - マットな雰囲気に合わせて調整 -->
+    <filter id="blur-light" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10"/>
+    </filter>
+    <filter id="blur-medium" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="20"/>
+    </filter>
+    <filter id="blur-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8"/>
+    </filter>
+    <filter id="blur-tiny" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
+    </filter>
+    
+    <!-- 放射状グラデーション - マットな雰囲気に合わせて彩度を下げる -->
+    <radialGradient id="ruby-red" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#E07070" stop-opacity="0.25"/>
+      <stop offset="60%" stop-color="#E07070" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#E07070" stop-opacity="0"/>
+    </radialGradient>
+    
+    <radialGradient id="bright-red" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#E88080" stop-opacity="0.2"/>
+      <stop offset="60%" stop-color="#E88080" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#E88080" stop-opacity="0"/>
+    </radialGradient>
+    
+    <radialGradient id="pink-gradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#E091A6" stop-opacity="0.2"/>
+      <stop offset="60%" stop-color="#E091A6" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#E091A6" stop-opacity="0"/>
+    </radialGradient>
+    
+    <radialGradient id="purple-gradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#B095D6" stop-opacity="0.2"/>
+      <stop offset="60%" stop-color="#B095D6" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#B095D6" stop-opacity="0"/>
+    </radialGradient>
+    
+    <radialGradient id="orange-gradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#E3A287" stop-opacity="0.2"/>
+      <stop offset="60%" stop-color="#E3A287" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#E3A287" stop-opacity="0"/>
+    </radialGradient>
+    
+    <radialGradient id="blue-gradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#8FC3E0" stop-opacity="0.2"/>
+      <stop offset="60%" stop-color="#8FC3E0" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#8FC3E0" stop-opacity="0"/>
+    </radialGradient>
+    
+    <!-- 光の効果 - よりマットな質感に -->
+    <radialGradient id="glow-red" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#E07070" stop-opacity="0.5"/>
+      <stop offset="40%" stop-color="#E07070" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#E07070" stop-opacity="0"/>
+    </radialGradient>
+    
+    <radialGradient id="glow-pink" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#E091A6" stop-opacity="0.5"/>
+      <stop offset="40%" stop-color="#E091A6" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#E091A6" stop-opacity="0"/>
+    </radialGradient>
+    
+    <radialGradient id="glow-purple" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#B095D6" stop-opacity="0.5"/>
+      <stop offset="40%" stop-color="#B095D6" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#B095D6" stop-opacity="0"/>
+    </radialGradient>
+    
+    <radialGradient id="glow-orange" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#E3A287" stop-opacity="0.5"/>
+      <stop offset="40%" stop-color="#E3A287" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#E3A287" stop-opacity="0"/>
+    </radialGradient>
+    
+    <radialGradient id="glow-blue" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#8FC3E0" stop-opacity="0.5"/>
+      <stop offset="40%" stop-color="#8FC3E0" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#8FC3E0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- 主要な波紋 - よりマットな印象に -->
+  <circle cx="300" cy="200" r="200" fill="url(#ruby-red)" filter="url(#blur-medium)"/>
+  <circle cx="900" cy="600" r="180" fill="url(#ruby-red)" filter="url(#blur-medium)"/>
+  <circle cx="600" cy="300" r="160" fill="url(#purple-gradient)" filter="url(#blur-medium)"/>
+  <circle cx="750" cy="150" r="140" fill="url(#bright-red)" filter="url(#blur-medium)"/>
+  <circle cx="220" cy="650" r="120" fill="url(#pink-gradient)" filter="url(#blur-medium)"/>
+  <circle cx="850" cy="300" r="130" fill="url(#orange-gradient)" filter="url(#blur-medium)"/>
+  <circle cx="400" cy="450" r="150" fill="url(#blue-gradient)" filter="url(#blur-medium)"/>
+  
+  <!-- 中サイズの波紋 - よりマットな印象に -->
+  <circle cx="450" cy="500" r="100" fill="url(#ruby-red)" filter="url(#blur-light)"/>
+  <circle cx="750" cy="400" r="90" fill="url(#pink-gradient)" filter="url(#blur-light)"/>
+  <circle cx="350" cy="350" r="80" fill="url(#purple-gradient)" filter="url(#blur-light)"/>
+  <circle cx="650" cy="550" r="95" fill="url(#orange-gradient)" filter="url(#blur-light)"/>
+  <circle cx="480" cy="200" r="85" fill="url(#bright-red)" filter="url(#blur-light)"/>
+  <circle cx="550" cy="680" r="75" fill="url(#ruby-red)" filter="url(#blur-light)"/>
+  <circle cx="150" cy="300" r="70" fill="url(#blue-gradient)" filter="url(#blur-light)"/>
+  
+  <!-- 光のような効果を持つ要素 - よりマットな印象に -->
+  <circle cx="300" cy="200" r="30" fill="url(#glow-red)" filter="url(#blur-glow)"/>
+  <circle cx="900" cy="600" r="25" fill="url(#glow-red)" filter="url(#blur-glow)"/>
+  <circle cx="600" cy="300" r="20" fill="url(#glow-purple)" filter="url(#blur-glow)"/>
+  <circle cx="750" cy="150" r="28" fill="url(#glow-red)" filter="url(#blur-glow)"/>
+  <circle cx="220" cy="650" r="22" fill="url(#glow-pink)" filter="url(#blur-glow)"/>
+  <circle cx="450" cy="500" r="18" fill="url(#glow-red)" filter="url(#blur-glow)"/>
+  <circle cx="750" cy="400" r="15" fill="url(#glow-pink)" filter="url(#blur-glow)"/>
+  <circle cx="350" cy="350" r="16" fill="url(#glow-purple)" filter="url(#blur-glow)"/>
+  <circle cx="850" cy="300" r="24" fill="url(#glow-orange)" filter="url(#blur-glow)"/>
+  <circle cx="650" cy="550" r="19" fill="url(#glow-orange)" filter="url(#blur-glow)"/>
+  <circle cx="480" cy="200" r="17" fill="url(#glow-red)" filter="url(#blur-glow)"/>
+  <circle cx="550" cy="680" r="20" fill="url(#glow-red)" filter="url(#blur-glow)"/>
+  <circle cx="150" cy="300" r="15" fill="url(#glow-blue)" filter="url(#blur-glow)"/>
+  <circle cx="400" cy="450" r="21" fill="url(#glow-blue)" filter="url(#blur-glow)"/>
+  
+  <!-- 中心となる光点 - よりマットな色合いに -->
+  <circle cx="300" cy="200" r="6" fill="#E07070" opacity="0.9"/>
+  <circle cx="900" cy="600" r="5" fill="#E07070" opacity="0.9"/>
+  <circle cx="600" cy="300" r="4" fill="#B095D6" opacity="0.9"/>
+  <circle cx="750" cy="150" r="5" fill="#E07070" opacity="0.9"/>
+  <circle cx="220" cy="650" r="4" fill="#E091A6" opacity="0.9"/>
+  <circle cx="450" cy="500" r="4" fill="#E07070" opacity="0.9"/>
+  <circle cx="750" cy="400" r="4" fill="#E091A6" opacity="0.9"/>
+  <circle cx="350" cy="350" r="4" fill="#B095D6" opacity="0.9"/>
+  <circle cx="850" cy="300" r="4" fill="#E3A287" opacity="0.9"/>
+  <circle cx="650" cy="550" r="4" fill="#E3A287" opacity="0.9"/>
+  <circle cx="480" cy="200" r="4" fill="#E07070" opacity="0.9"/>
+  <circle cx="550" cy="680" r="4" fill="#E07070" opacity="0.9"/>
+  <circle cx="150" cy="300" r="4" fill="#8FC3E0" opacity="0.9"/>
+  <circle cx="400" cy="450" r="4" fill="#8FC3E0" opacity="0.9"/>
+  
+  <!-- 小さな光点のクラスター - よりマットな印象に -->
+  <!-- 300,200を中心とするクラスター -->
+  <circle cx="280" cy="180" r="3" fill="#E07070" opacity="0.7"/>
+  <circle cx="320" cy="220" r="2.5" fill="#E07070" opacity="0.7"/>
+  <circle cx="330" cy="180" r="2" fill="#E07070" opacity="0.7"/>
+  <circle cx="270" cy="210" r="2" fill="#E07070" opacity="0.7"/>
+  <circle cx="310" cy="170" r="1.5" fill="#E07070" opacity="0.6"/>
+  <circle cx="290" cy="230" r="1.5" fill="#E07070" opacity="0.6"/>
+  
+  <!-- 900,600を中心とするクラスター -->
+  <circle cx="880" cy="580" r="3" fill="#E07070" opacity="0.7"/>
+  <circle cx="920" cy="620" r="2.5" fill="#E07070" opacity="0.7"/>
+  <circle cx="930" cy="590" r="2" fill="#E07070" opacity="0.7"/>
+  <circle cx="870" cy="610" r="2" fill="#E07070" opacity="0.7"/>
+  <circle cx="910" cy="570" r="1.5" fill="#E07070" opacity="0.6"/>
+  
+  <!-- 600,300を中心とするクラスター -->
+  <circle cx="580" cy="280" r="3" fill="#B095D6" opacity="0.7"/>
+  <circle cx="620" cy="320" r="2.5" fill="#B095D6" opacity="0.7"/>
+  <circle cx="630" cy="290" r="2" fill="#B095D6" opacity="0.7"/>
+  <circle cx="570" cy="310" r="2" fill="#B095D6" opacity="0.7"/>
+  <circle cx="610" cy="270" r="1.5" fill="#B095D6" opacity="0.6"/>
+  
+  <!-- 青い光点のクラスター -->
+  <circle cx="380" cy="430" r="3" fill="#8FC3E0" opacity="0.7"/>
+  <circle cx="420" cy="470" r="2.5" fill="#8FC3E0" opacity="0.7"/>
+  <circle cx="430" cy="440" r="2" fill="#8FC3E0" opacity="0.7"/>
+  <circle cx="370" cy="460" r="2" fill="#8FC3E0" opacity="0.7"/>
+  <circle cx="410" cy="420" r="1.5" fill="#8FC3E0" opacity="0.6"/>
+  
+  <!-- その他の小さな光点 - より広く分布 -->
+  <circle cx="400" cy="250" r="3" fill="#E07070" opacity="0.7"/>
+  <circle cx="820" cy="550" r="2.5" fill="#E07070" opacity="0.7"/>
+  <circle cx="680" cy="350" r="3" fill="#B095D6" opacity="0.7"/>
+  <circle cx="550" cy="420" r="2.5" fill="#E091A6" opacity="0.7"/>
+  <circle cx="380" cy="600" r="3" fill="#E3A287" opacity="0.7"/>
+  <circle cx="780" cy="250" r="2.5" fill="#E07070" opacity="0.7"/>
+  <circle cx="500" cy="180" r="3" fill="#E091A6" opacity="0.7"/>
+  <circle cx="270" cy="450" r="2.5" fill="#B095D6" opacity="0.7"/>
+  <circle cx="520" cy="620" r="3" fill="#E07070" opacity="0.7"/>
+  <circle cx="700" cy="500" r="2.5" fill="#E3A287" opacity="0.7"/>
+  <circle cx="300" cy="380" r="3" fill="#B095D6" opacity="0.7"/>
+  <circle cx="850" cy="450" r="2.5" fill="#E07070" opacity="0.7"/>
+  <circle cx="150" cy="550" r="3" fill="#E091A6" opacity="0.7"/>
+  <circle cx="950" cy="350" r="2.5" fill="#E3A287" opacity="0.7"/>
+  <circle cx="600" cy="150" r="3" fill="#E07070" opacity="0.7"/>
+  <circle cx="320" cy="700" r="2.5" fill="#E3A287" opacity="0.7"/>
+  <circle cx="100" cy="400" r="3" fill="#8FC3E0" opacity="0.7"/>
+  <circle cx="200" cy="180" r="2.5" fill="#8FC3E0" opacity="0.7"/>
+  
+  <!-- 非常に小さな光点/星 - マットな背景に合わせて調整 -->
+  <circle cx="100" cy="100" r="1" fill="#D8D8E6" opacity="0.5"/>
+  <circle cx="150" cy="200" r="0.8" fill="#D8D8E6" opacity="0.4"/>
+  <circle cx="250" cy="120" r="0.6" fill="#D8D8E6" opacity="0.4"/>
+  <circle cx="350" cy="50" r="1" fill="#D8D8E6" opacity="0.5"/>
+  <circle cx="480" cy="80" r="0.7" fill="#D8D8E6" opacity="0.4"/>
+  <circle cx="550" cy="30" r="0.9" fill="#D8D8E6" opacity="0.5"/>
+  <circle cx="650" cy="70" r="0.6" fill="#D8D8E6" opacity="0.4"/>
+  <circle cx="720" cy="40" r="1" fill="#D8D8E6" opacity="0.5"/>
+  <circle cx="800" cy="90" r="0.8" fill="#D8D8E6" opacity="0.4"/>
+  <circle cx="900" cy="60" r="0.7" fill="#D8D8E6" opacity="0.4"/>
+  <circle cx="1000" cy="120" r="0.9" fill="#D8D8E6" opacity="0.5"/>
+  <circle cx="1050" cy="70" r="0.6" fill="#D8D8E6" opacity="0.4"/>
+  <circle cx="1100" cy="150" r="1" fill="#D8D8E6" opacity="0.5"/>
+  <circle cx="50" cy="250" r="0.7" fill="#D8D8E6" opacity="0.4"/>
+  <circle cx="180" cy="350" r="0.8" fill="#D8D8E6" opacity="0.4"/>
+  <circle cx="980" cy="450" r="0.9" fill="#D8D8E6" opacity="0.5"/>
+  <circle cx="1150" cy="300" r="0.6" fill="#D8D8E6" opacity="0.4"/>
+  <circle cx="70" cy="500" r="1" fill="#D8D8E6" opacity="0.5"/>
+  <circle cx="970" cy="700" r="0.8" fill="#D8D8E6" opacity="0.4"/>
+  <circle cx="1050" cy="550" r="0.7" fill="#D8D8E6" opacity="0.4"/>
+  
+  <!-- 星座のように光点を繋ぐ線 - マットな雰囲気に合わせて調整 -->
+  <path d="M300,200 Q450,250 600,300" stroke="#E07070" stroke-width="1" opacity="0.2" fill="none" filter="url(#blur-tiny)"/>
+  <path d="M600,300 Q750,400 900,600" stroke="#B095D6" stroke-width="1" opacity="0.2" fill="none" filter="url(#blur-tiny)"/>
+  <path d="M220,650 Q350,575 450,500" stroke="#E091A6" stroke-width="1" opacity="0.2" fill="none" filter="url(#blur-tiny)"/>
+  <path d="M750,150 Q800,225 850,300" stroke="#E07070" stroke-width="1" opacity="0.2" fill="none" filter="url(#blur-tiny)"/>
+  <path d="M450,500 Q550,525 650,550" stroke="#E3A287" stroke-width="1" opacity="0.2" fill="none" filter="url(#blur-tiny)"/>
+  <path d="M150,300 Q280,380 400,450" stroke="#8FC3E0" stroke-width="1" opacity="0.2" fill="none" filter="url(#blur-tiny)"/>
+  
+  <!-- 繊細な星座パターン - マットな雰囲気に合わせて調整 -->
+  <path d="M300,200 L320,220 L330,180 L300,200" stroke="#E07070" stroke-width="0.5" opacity="0.15" fill="none"/>
+  <path d="M900,600 L920,620 L930,590 L900,600" stroke="#E07070" stroke-width="0.5" opacity="0.15" fill="none"/>
+  <path d="M600,300 L620,320 L630,290 L600,300" stroke="#B095D6" stroke-width="0.5" opacity="0.15" fill="none"/>
+  <path d="M750,150 L770,170 L780,140 L750,150" stroke="#E07070" stroke-width="0.5" opacity="0.15" fill="none"/>
+  <path d="M400,450 L420,470 L430,440 L400,450" stroke="#8FC3E0" stroke-width="0.5" opacity="0.15" fill="none"/>
+</svg>

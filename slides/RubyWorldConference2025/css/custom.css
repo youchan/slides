@@ -1,0 +1,117 @@
+.background {
+  background-image: url("../images/ruby-dark-background.svg");
+}
+
+.page {
+  color: #e8e8e8;
+}
+
+.page-content {
+  width: 86%;
+}
+
+#cover .author {
+  position: absolute;
+  margin-top: 3em;
+  right: 3em;
+}
+
+#cover .icon {
+  position: absolute;
+  float: left;
+  top: 80px;
+  left: 30em; 
+}
+
+#cover .icon img {
+  width: 128px;
+}
+
+.slide .page-header {
+  margin-top: 0.5em;
+}
+
+.caption {
+  font-size: 80%;
+  text-align: center;
+}
+
+.team {
+  margin: 4em auto;
+  font-size: 130%;
+  text-align: center;
+}
+
+.project {
+  position: relative;
+  margin-top: 4em;
+  font-size: 80%;
+  text-align: center;
+}
+
+.conway {
+  padding: 16px;
+  line-height: 2em;
+  background-color: #fff;
+  color: #000;
+}
+
+.full img {
+  position: relative;
+  left: -12.5%;
+  top: 0;
+  display: block;
+  width: 1920px;
+}
+
+.large img {
+  position: relative;
+  margin: auto;
+  margin-top: 3em;
+  display: block;
+  width: 100%;
+}
+
+.middle img {
+  position: relative;
+  margin: auto;
+  display: block;
+  width: 80%;
+}
+
+.cats img {
+  left: 45%;
+  width: 50%;
+  margin-left: 5%;
+  float: right;
+  border-radius: 8px;
+}
+
+.pdm img {
+  position: relative;
+  margin: auto;
+  display: block;
+  width: 50%;
+}
+
+.incremental_iterative img {
+  position: relative;
+  margin: auto;
+  display: block;
+  width: 60%;
+}
+
+.module_splitting img {
+  left: 40%;
+  width: 55%;
+  margin-left: 5%;
+  float: right;
+}
+
+ul {
+  list-style: url("../images/dot.png");
+}
+
+.page li {
+  padding-left: 32px;
+}

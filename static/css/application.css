@@ -50,7 +50,7 @@ body {
 }
 
 .slide .page {
-  position: absolute;
+  position: relative;
 }
 
 .slide .page-background {
