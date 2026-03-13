@@ -1,10 +1,10 @@
 .page {
-  background-image: url("/images/background.png");
+  background-image: url("../images/background.png");
   color: #222;
 }
 
 #cover {
-  background-image: url("/images/background_cover.png");
+  background-image: url("../images/background_cover.png");
   color: #fff;
 }
 
