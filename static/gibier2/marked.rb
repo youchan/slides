@@ -67,6 +67,8 @@ module Gibier2
           Node::Strong.new(token)
         when 'em'
           Node::Em.new(token)
+        when 'table'
+          Node::Table.new(token)
         when 'hr'
           Node::Hrule.new(token)
         when 'space'
@@ -267,6 +269,35 @@ module Gibier2
 
         def extract_children
           Text.from_string @text
+        end
+      end
+
+      class Table
+        include Node
+
+        attr_reader :header, :rows, :align
+
+        def initialize(token)
+          @type = :table
+          @header = token.header.map do |cell|
+            text = Native(cell).text
+            `cell.native['processed'] = true`
+            if Native(cell).respond_to?(:tokens)
+              Native(cell).tokens.each { |t| `t.native['processed'] = true` }
+            end
+            text
+          end
+          @align = token.align.map { |a| a }
+          @rows = token.rows.map do |row|
+            row.map do |cell|
+              text = Native(cell).text
+              `cell.native['processed'] = true`
+              if Native(cell).respond_to?(:tokens)
+                Native(cell).tokens.each { |t| `t.native['processed'] = true` }
+              end
+              text
+            end
+          end
         end
       end
 

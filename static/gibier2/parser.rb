@@ -78,6 +78,8 @@ module Gibier2
         CodeContent.new(node)
       when :link
         LinkContent.new(node)
+      when :table
+        TableContent.new(node)
       when :softbreak
         SoftbreakContent.new(node)
       end
@@ -243,6 +245,46 @@ module Gibier2
         CGI.escapeHTML(@code).gsub(/\n/, '</br>').gsub(/\s/, '&nbsp;')
       end
       "<pre class='highlight'>\n#{code_html}</pre>"
+    end
+  end
+
+  class TableContent
+    include Content
+
+    def initialize(node)
+      @header = node.header
+      @rows = node.rows
+      @align = node.align
+    end
+
+    def align_style(index)
+      case @align[index]
+      when 'left'
+        " style='text-align:left'"
+      when 'center'
+        " style='text-align:center'"
+      when 'right'
+        " style='text-align:right'"
+      else
+        ''
+      end
+    end
+
+    def to_html
+      html = "<table>\n<thead>\n<tr>\n"
+      @header.each_with_index do |cell, i|
+        html += "<th#{align_style(i)}>#{cell}</th>\n"
+      end
+      html += "</tr>\n</thead>\n<tbody>\n"
+      @rows.each do |row|
+        html += "<tr>\n"
+        row.each_with_index do |cell, i|
+          html += "<td#{align_style(i)}>#{cell}</td>\n"
+        end
+        html += "</tr>\n"
+      end
+      html += "</tbody>\n</table>"
+      html
     end
   end
 
