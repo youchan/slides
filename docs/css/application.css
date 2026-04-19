@@ -481,6 +481,19 @@ table tr:nth-child(odd){
   100% { transform: rotate(360deg) }
 }
 
+.full img {
+  position: relative;
+  left: -12.5%;
+  top: 0;
+  display: block;
+  width: 1920px;
+}
+
+@page {
+  size: landscape;
+  margin: 0;
+}
+
 @media print {
   .gibier {
     position: static;
@@ -507,18 +520,25 @@ table tr:nth-child(odd){
 
   .print-page {
     page-break-after: always;
+    page-break-inside: avoid;
     position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
+    width: 1920px;
+    height: 1080px;
+    zoom: 0.5;
+    overflow: hidden;
   }
 
   .print-page .page {
     position: relative;
-    width: 100% !important;
-    height: 100% !important;
+    width: 1920px;
+    height: 1080px;
     left: 0 !important;
     top: 0 !important;
-    zoom: 1 !important;
+  }
+
+  .full img {
+    width: 100%;
+    left: 0;
   }
 }
 
