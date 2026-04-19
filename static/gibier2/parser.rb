@@ -55,6 +55,8 @@ module Gibier2
         text = text + node.string_content
       when :link
         text = text + "<a href='#{node.url}'>#{extract_text(node.extract_children)}</a>\n"
+      when :codespan
+        text = text + "<code>#{node.string_content}</code>"
       when :custom_inline
         node.each do |n|
           text = text + extract_text(n)
@@ -68,7 +70,7 @@ module Gibier2
       case node.type
       when :paragraph
         ParagraphContent.new(node)
-      when :text, :strong, :emph
+      when :text, :strong, :emph, :codespan
         TextContent.new(node)
       when :list
         ListContent.new(node)
@@ -242,7 +244,7 @@ module Gibier2
         formatter = Rouge::Formatters::HTML.new
         formatter.format(lexer.lex(@code))
       else
-        CGI.escapeHTML(@code).gsub(/\n/, '</br>').gsub(/\s/, '&nbsp;')
+        @code.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;').gsub(/\n/, '</br>').gsub(/\s/, '&nbsp;')
       end
       "<pre class='highlight'>\n#{code_html}</pre>"
     end

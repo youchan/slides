@@ -62,7 +62,7 @@ module Gibier2
         when 'code'
           Node::Code.new(token)
         when 'codespan'
-          Node::Code.new(token)
+          Node::CodeSpan.new(token)
         when 'strong'
           Node::Strong.new(token)
         when 'em'
@@ -233,6 +233,19 @@ module Gibier2
           @type = :code_block
           @text = token.text
           @fence_info = token.lang
+        end
+
+        def string_content
+          @text
+        end
+      end
+
+      class CodeSpan
+        include Node
+
+        def initialize(token)
+          @type = :codespan
+          @text = token.text
         end
 
         def string_content

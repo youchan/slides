@@ -18,6 +18,7 @@ module Gibier2
       end
 
       def self.find(fence_info)
+        return nil if fence_info.nil? || fence_info.empty?
         self.new(fence_info)
       end
     end
