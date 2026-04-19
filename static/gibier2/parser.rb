@@ -279,13 +279,13 @@ module Gibier2
     def to_html
       html = "<table>\n<thead>\n<tr>\n"
       @header.each_with_index do |cell, i|
-        html += "<th#{align_style(i)}>#{cell}</th>\n"
+        html += "<th#{align_style(i)}>#{extract_text(cell)}</th>\n"
       end
       html += "</tr>\n</thead>\n<tbody>\n"
       @rows.each do |row|
         html += "<tr>\n"
         row.each_with_index do |cell, i|
-          html += "<td#{align_style(i)}>#{cell}</td>\n"
+          html += "<td#{align_style(i)}>#{extract_text(cell)}</td>\n"
         end
         html += "</tr>\n"
       end

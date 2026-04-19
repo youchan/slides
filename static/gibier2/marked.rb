@@ -314,23 +314,34 @@ module Gibier2
         def initialize(token)
           @type = :table
           @header = token.header.map do |cell|
-            text = Native(cell).text
-            `cell.native['processed'] = true`
-            if Native(cell).respond_to?(:tokens)
-              Native(cell).tokens.each { |t| `t.native['processed'] = true` }
-            end
-            text
+            process_cell(cell)
           end
           @align = token.align.map { |a| a }
           @rows = token.rows.map do |row|
             row.map do |cell|
-              text = Native(cell).text
-              `cell.native['processed'] = true`
-              if Native(cell).respond_to?(:tokens)
-                Native(cell).tokens.each { |t| `t.native['processed'] = true` }
-              end
-              text
+              process_cell(cell)
             end
+          end
+        end
+
+        def process_cell(cell)
+          native_cell = Native(cell)
+          `cell.native['processed'] = true`
+          if native_cell.respond_to?(:tokens)
+            children = native_cell.tokens.map do |child|
+              node = create_node(child)
+              `child.native['processed'] = true`
+              node
+            end.compact
+            if children.length > 1
+              InlineGroup.new(children)
+            elsif children.length == 1
+              children[0]
+            else
+              Text.from_string(native_cell.text || '')
+            end
+          else
+            Text.from_string(native_cell.text || '')
           end
         end
       end

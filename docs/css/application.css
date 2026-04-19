@@ -402,6 +402,7 @@ a:active {
 table{
   border-collapse:collapse;
   margin:0 auto;
+  font-size: 1em;
 }
 td,th{
   padding:10px;
