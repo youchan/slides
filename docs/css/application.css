@@ -104,17 +104,6 @@ body {
   background-color: rgba(0, 0, 0, 0);
 }
 
-.page p.icon {
-  margin: 0;
-  position: absolute;
-  top: 5.7em;
-  left: 25em;
-}
-
-.page p.icon img {
-  width: 3em;
-}
-
 .page code {
   font-size: 0.8em;
 }
@@ -140,7 +129,7 @@ body {
   background-repeat: no-repeat;
 }
 
-.page .inline {
+.page p.inline {
   margin: 0 8px;
   float: left;
 }
@@ -158,18 +147,27 @@ body {
   margin: 0;
 }
 
-.page p.large {
+
+.page div.small {
+  text-align: center;
+  margin: 0;
+}
+.page div.small img {
+  width: 50%;
+}
+
+.page .large {
   text-align: center;
   font-size: 1.6em;
   font-weight: bold;
   margin: 0;
 }
 
-.page p.large img {
+.page .large img {
   width: 80%;
 }
 
-.page p.middle {
+.page .middle {
   text-align: center;
   font-size: 1.6em;
   font-weight: bold;
@@ -177,30 +175,30 @@ body {
   margin-top: 1rem;
 }
 
-.page p.middle img {
+.page .middle img {
   width: 60%;
 }
 
-.page p.portlait {
+.page .portlait {
   text-align: center;
   font-size: 1.6em;
   font-weight: bold;
   margin: 0;
 }
 
-.page p.portlait img {
+.page .portlait img {
   width: 40%;
   margin-top: 4em;
 }
 
-.page p.portlait-left {
+.page .portlait-left {
   text-align: left;
   font-size: 1.6em;
   font-weight: bold;
   margin: 0;
 }
 
-.page p.portlait-left img {
+.page .portlait-left img {
   width: 38%;
   margin-top: 12%;
   float: left;
@@ -214,14 +212,14 @@ body {
   width: 20em;
 }
 
-.page p.portlait-right {
+.page .portlait-right {
   text-align: right;
   font-size: 1.6em;
   font-weight: bold;
   margin: 0;
 }
 
-.page p.portlait-right img {
+.page .portlait-right img {
   width: 30%;
   margin-top: 12%;
   float: right;
@@ -235,47 +233,47 @@ body {
   width: 60%;
 }
 
-.page p.w90 {
+.page .w90 {
   text-align: center;
   font-size: 1.6em;
   font-weight: bold;
   margin: 0;
 }
 
-.page p.w90 img {
+.page .w90 img {
   width: 90%;
 }
 
-.page p.w70 {
+.page .w70 {
   text-align: center;
   font-size: 1.6em;
   font-weight: bold;
   margin: 0;
 }
 
-.page p.w70 img {
+.page .w70 img {
   width: 70%;
 }
 
-.page p.w50 {
+.page .w50 {
   text-align: center;
   font-size: 1.6em;
   font-weight: bold;
   margin: 0;
 }
 
-.page p.w50 img {
+.page .w50 img {
   width: 50%;
 }
 
-.page p.w30 {
+.page .w30 {
   text-align: center;
   font-size: 1.6em;
   font-weight: bold;
   margin: 0;
 }
 
-.page p.w30 img {
+.page .w30 img {
   width: 30%;
 }
 

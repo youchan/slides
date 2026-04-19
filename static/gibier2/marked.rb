@@ -97,7 +97,7 @@ module Gibier2
         end
 
         def extract_children
-          if @children.length > 1
+          if @children.length >= 1
             InlineGroup.new(@children)
           else
             Text.from_string(@text)

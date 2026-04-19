@@ -57,21 +57,6 @@
 }
 
 
-.large img {
-  position: relative;
-  margin: auto;
-  margin-top: 3em;
-  display: block;
-  width: 100%;
-}
-
-.middle img {
-  position: relative;
-  margin: auto;
-  display: block;
-  width: 80%;
-}
-
 .cats img {
   left: 45%;
   width: 50%;

@@ -143,7 +143,7 @@ module Gibier2
       classes << @class_name if @class_name
 
       if classes.length > 0
-        "<div class='#{classes.join(' ')}'>#{@text}</div>"
+        "<p class='#{classes.join(' ')}'>#{@text}</p>"
       else
         @text
       end
