@@ -139,7 +139,11 @@ module Gibier2
         end
 
         def string_content
-          @text.gsub("\n", "<br/>\n")
+          if @text =~ /\A\[file (.+)\]\z/
+            "<span class='file-ref'>#{$1}</span>"
+          else
+            @text.gsub("\n", "<br/>\n")
+          end
         end
       end
 
