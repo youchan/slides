@@ -39,3 +39,12 @@ bundle exec rackup
 
 Open http://localhost:9161 then you can see the sample slide.
 
+## test for GH
+
+Run test server
+
+```sh
+ruby gh_server.rb
+```
+
+Open http://localhost:9161/slides/ then you can see the sample slide.
