@@ -33,6 +33,10 @@ module Gibier2
       current
     end
 
+    def each(&block)
+      @pages.each(&block)
+    end
+
     def marshal_dump
       [@pages, @page_num]
     end

@@ -61,3 +61,19 @@ pages = load_slide(m[:event]).__await__
 num = m[:num]&.sub(/\A#/, '').to_i || 0
 page = pages.page(num)
 update_page(page, top, left, zoom)
+
+$$.addEventListener('beforeprint') do
+  slide = $$.document.getElementsByClassName('slide')[0]
+  html = ''
+  pages.each do |page|
+    html += "<div class='print-page'>"
+    html += page.to_html
+    html += "</div>"
+  end
+  slide.innerHTML = html
+end
+
+$$.addEventListener('afterprint') do
+  page = pages.page(pages.page_num)
+  update_page(page, top, left, zoom)
+end
