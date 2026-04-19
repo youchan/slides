@@ -154,12 +154,12 @@ module Gibier2
     include Content
 
     def initialize(node)
+      @text = ''
       node.each.map do |child|
         case child.type
-        when :text
-          @text = extract_text(child)
+        when :text, :codespan, :strong, :emph
+          @text += extract_text(child)
         when :paragraph
-          @text = ''
           child.each do |cc|
             @text += extract_text(cc)
           end

@@ -46,7 +46,7 @@ module Gibier2
         when 'heading'
           Node::Header.new(token)
         when 'text'
-          if token.respond_to?(:tokens) && token.tokens.count > 1
+          if token.respond_to?(:tokens) && token.tokens.count >= 1
             Node::Paragraph.new(token)
           else
             Node::Text.new(token)
@@ -86,14 +86,35 @@ module Gibier2
         attr_reader :header_level
 
         def initialize(token)
-          @type = :header 
+          @type = :header
           @text = token.text
           @header_level = token.depth
-          token.tokens.each{|t| `t.native['processed'] = true`}
+          @children = token.tokens.map do |child|
+            node = create_node(child)
+            `child.native['processed'] = true`
+            node
+          end.compact
         end
 
         def extract_children
-          Text.from_string(@text)
+          if @children.length > 1
+            InlineGroup.new(@children)
+          else
+            Text.from_string(@text)
+          end
+        end
+      end
+
+      class InlineGroup
+        include Node
+
+        def initialize(children)
+          @type = :custom_inline
+          @children = children
+        end
+
+        def each(&block)
+          @children.each(&block)
         end
       end
 
