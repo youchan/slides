@@ -41,9 +41,21 @@
   background-position: bottom left;
 }
 
+.page:not(:has(.page-header)) .page-content {
+  top: 45%;
+}
+
 #cover {
-  background-image: url("../images/background_cover.png");
+  background-image: url("../images/cover_background.png");
+  background-size: auto 100%;
+  background-position: center;
+  background-repeat: no-repeat;
   color: #fff;
+}
+
+#cover::before,
+#cover::after {
+  content: none;
 }
 
 #cover .page-header {
@@ -67,8 +79,8 @@ h2 {
   text-align: left;
   position: relative;
   background:
-    url("https://cruby-quest.youchan-apps.net/contents/images/decorations/h2_line_top.svg") left top / 100% 18px no-repeat,
-    url("https://cruby-quest.youchan-apps.net/contents/images/decorations/h2_line_bottom.svg") left bottom / 100% 18px no-repeat,
+    url("../images/h2_line_top.svg") left top / 100% 18px no-repeat,
+    url("../images/h2_line_bottom.svg") left bottom / 100% 18px no-repeat,
     linear-gradient(#000, #000) left top 18px / 6px calc(100% - 36px) no-repeat,
     linear-gradient(#000, #000) right top 18px / 6px calc(100% - 36px) no-repeat,
     #fff;
@@ -85,7 +97,7 @@ h2::before {
   left: 8px;
   width: 80px;
   height: 80px;
-  background-image: url("https://cruby-quest.youchan-apps.net/contents/images/pixel_parts/ruby.png");
+  background-image: url("../images/ruby.png");
   background-size: contain;
   background-repeat: no-repeat;
   transform: translateY(-50%);
@@ -220,6 +232,33 @@ a:active {
 
 .page p:has(.file-ref) + pre.highlight {
   margin-top: 0;
+}
+
+.page ul {
+  list-style: none;
+  padding-left: 1.5em;
+}
+
+.page ul li {
+  position: relative;
+  padding-left: 0.5em;
+}
+
+.page ul li::before {
+  content: '';
+  position: absolute;
+  left: -1.2em;
+  top: 0.15em;
+  width: 0.9em;
+  height: 0.9em;
+  background-image: url("../images/key.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.page ul ul li::before {
+  background-image: url("../images/shield.png");
 }
 
 

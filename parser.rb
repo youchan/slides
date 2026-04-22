@@ -72,9 +72,14 @@ module Gibier2
 
     def initialize(node)
       @contents = []
+      @class_name = nil
     end
 
     def <<(content)
+      if @contents.empty? && content.is_a?(TextContent) && content.class_name
+        @class_name = content.class_name
+        content.clear_class_name
+      end
       @contents << content
     end
 
@@ -84,18 +89,26 @@ module Gibier2
 
     def to_html
       return '' if @contents.length == 0
-      <<~CONTENT
-        <p>
-          #{string_content}
-        </p>
-      CONTENT
+      if @class_name
+        <<~CONTENT
+          <div class='#{@class_name}'>
+            #{string_content}
+          </div>
+        CONTENT
+      else
+        <<~CONTENT
+          <p>
+            #{string_content}
+          </p>
+        CONTENT
+      end
     end
   end
 
   class TextContent
     include Content
 
-    attr_reader :text
+    attr_reader :text, :class_name
 
     def initialize(node)
       @strong = true if [:strong, :emph].include?(node.type)
@@ -110,6 +123,10 @@ module Gibier2
       else
         [text, nil]
       end
+    end
+
+    def clear_class_name
+      @class_name = nil
     end
 
     def to_html

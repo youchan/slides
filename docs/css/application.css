@@ -262,6 +262,17 @@ body {
   margin: 0;
 }
 
+.page .w60 img {
+  width: 60%;
+}
+
+.page .w60 {
+  text-align: center;
+  font-size: 1.6em;
+  font-weight: bold;
+  margin: 0;
+}
+
 .page .w50 img {
   width: 50%;
 }

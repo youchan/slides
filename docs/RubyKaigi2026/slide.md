@@ -1,45 +1,155 @@
-# Guide to getting started walking source codes of CRuby
+# {#cover}
 
 ## About Me
 
+- youchan
+- ANDPAD Inc.
+  - RubyKaigi Ruby suponsor
+  - I will be handing out boxed lunches on Day 2
+- Author of [Gibier2](https://github.com/youchan/gibier2)
+- Member of
+  - Asakusa.rb
+  - PicoPicoRuby
+
 ## The CRuby Adventure Book
 
-![small](images/cover_outline_6.8.jpg)
+![w60](images/cover_outline_6.8.jpg)
 
 ## How to Read CRuby Source Code
 
 - General tips for reading C code, regardless of CRuby
 - CRuby-specific details
 
-## General Tips for Reading C Code (Regardless of CRuby)
+## Tips for Reading General C Code
 
 - Aim to get a rough overview first
 - Narrow down the areas you need to read
 
 ## Tip 1
 
-Identify sections you can skip
+%large: Identify sections you can skip
 
-## `#ifdef - #endif`
+## `#if - #endif`
 
-Determined at compile time
-Usually for options or specific environments (JIT, WASM, etc.)
-Occasionally, some are enabled by default, so be aware of anything that seems out of place
+Determined at compile time.
+Usually for options or specific environments (JIT, WASM, etc.).
+Occasionally, some are enabled by default, so be aware of anything that seems out of place.
 
+---
+
+[file vm.c:2771]
+
+```c
+VALUE
+vm_exec(rb_execution_context_t *ec)
+{
+    VALUE result = Qundef;
+    EC_PUSH_TAG(ec);
+    _tag.retval = Qnil;
+#if defined(__wasm__) && !defined(__EMSCRIPTEN__)
+    /* Skip this section */
+#else
+    enum ruby_tag_type state;
+    if ((state = EC_EXEC_TAG()) == TAG_NONE) {
+        if (UNDEF_P(result = jit_exec(ec))) {
+            result = vm_exec_core(ec);
+        }
+        /* fallback to the VM */
+        result = vm_exec_loop(ec, TAG_NONE, &_tag, result);
+    }
+    else {
+        result = vm_exec_loop(ec, state, &_tag, ec->errinfo);
+    }
+#endif
+    EC_POP_TAG();
+    return result;
+}
+```
 ## Error handling
 
-If you find something like assert(), skip it
+%large: If you find something like assert(), skip it
 
-## Option handling
+---
 
-Some set flags, so memorizing option flags makes it easier to skip over them later
+[file vm_insnhelper.c:2362]
+
+```c
+if (LIKELY(vm_cc_class_check(cc, klass))) {
+    if (LIKELY(!METHOD_ENTRY_INVALIDATED(vm_cc_cme(cc)))) {
+        VM_ASSERT(callable_method_entry_p(vm_cc_cme(cc)));
+        RB_DEBUG_COUNTER_INC(mc_inline_hit);
+        VM_ASSERT(vm_cc_cme(cc) == NULL ||                        // not found
+                  (vm_ci_flag(cd->ci) & VM_CALL_SUPER) ||         // search_super w/ define_method
+                  vm_cc_cme(cc)->called_id == vm_ci_mid(cd->ci)); // cme->called_id == ci->mid
+
+        return cc;
+    }
+    RB_DEBUG_COUNTER_INC(mc_inline_miss_invalidated);
+}
+```
 
 ## Debugging-related
 
-This is common with `#ifdef`, but flags are sometimes used in option handling as well
+%large: This is common with `#if`, but flags are sometimes used in option handling as well
 
-Sections unrelated to what you want to know
-Since the relevance is often low, you may want to come back to them later, but it’s fine to skip them initially
+---
+
+[file debug_counter.h:366]
+
+```c
+#if USE_DEBUG_COUNTER
+/* snip ... */
+inline static int
+rb_debug_counter_add(enum rb_debug_counter_type type, int add, int cond)
+{
+/* snip ... */
+}
+
+/* snip ... */
+
+#define RB_DEBUG_COUNTER_INC(type)                rb_debug_counter_add(RB_DEBUG_COUNTER_##type, 1, 1)
+/* snip ... */
+#else
+#define RB_DEBUG_COUNTER_INC(type)              ((void)0)
+/* snip ... */
+#endif
+```
+
+## Sections unrelated to what you want to know
+
+%large: Since the relevance is often low, you may want to come back to them later, but it’s fine to skip them initially
+
+---
+
+[file vm_insnhelper.c:5965]
+
+```c
+static VALUE
+vm_find_or_create_class_by_id(ID id,
+                              rb_num_t flags,
+                              VALUE cbase,
+                              VALUE super)
+{
+    rb_vm_defineclass_type_t type = VM_DEFINECLASS_TYPE(flags);
+
+    switch (type) {
+      case VM_DEFINECLASS_TYPE_CLASS:
+        /* classdef returns class scope value */
+        return vm_define_class(id, flags, cbase, super);
+
+      case VM_DEFINECLASS_TYPE_SINGLETON_CLASS:
+        /* classdef returns class scope value */
+        return rb_singleton_class(cbase);
+
+      case VM_DEFINECLASS_TYPE_MODULE:
+        /* classdef returns class scope value */
+        return vm_define_module(id, flags, cbase);
+
+      default:
+        rb_bug("unknown defineclass type: %d", (int)type);
+    }
+}
+```
 
 ## Tip 2: Start with the Purpose
 
@@ -50,62 +160,203 @@ The return value is usually the objective.
 Conversely, the beginning often contains error handling (asserts, early returns) or setup.
 Don’t read the setup at first. If you do read it, make sure you know the objective first.
 
-## Tip 3: Knowledge of the Target Is Important
+---
 
-If you know what the program does or have knowledge of the algorithm, you can read it.
-However, you may not need to read it at all.
+[file compile.c:14742]
+
+```c
+VALUE
+rb_iseq_ibf_dump(const rb_iseq_t *iseq, VALUE opt)
+{
+    struct ibf_dump *dump;
+    struct ibf_header header = {{0}};
+    VALUE dump_obj;
+    VALUE str;
+
+    if (ISEQ_BODY(iseq)->parent_iseq != NULL ||
+        ISEQ_BODY(iseq)->local_iseq != iseq) {
+        rb_raise(rb_eRuntimeError, "should be top of iseq");
+    }
+    if (RTEST(ISEQ_COVERAGE(iseq))) {
+        rb_raise(rb_eRuntimeError, "should not compile with coverage");
+    }
+
+    dump_obj = TypedData_Make_Struct(0, struct ibf_dump, &ibf_dump_type, dump);
+    ibf_dump_setup(dump, dump_obj);
+
+    ibf_dump_write(dump, &header, sizeof(header));
+    ibf_dump_iseq(dump, iseq);
+```
 
 ---
 
-The CRuby parser consists of `parse.y` and `prism`.
-It’s also important to know the name “prism.”
+```c
+    header.magic[0] = 'Y'; /* YARB */
+    header.magic[1] = 'A';
+    header.magic[2] = 'R';
+    header.magic[3] = 'B';
+    header.major_version = IBF_MAJOR_VERSION;
+    header.minor_version = IBF_MINOR_VERSION;
+    header.endian = IBF_ENDIAN_MARK;
+    header.wordsize = (uint8_t)SIZEOF_VALUE;
+    ibf_dump_iseq_list(dump, &header);
+    ibf_dump_object_list(dump, &header.global_object_list_offset, &header.global_object_list_size);
+    header.size = ibf_dump_pos(dump);
 
-Modular GC and mmtk
+    if (RTEST(opt)) {
+        VALUE opt_str = opt;
+        const char *ptr = StringValuePtr(opt_str);
+        header.extra_size = RSTRING_LENINT(opt_str);
+        ibf_dump_write(dump, ptr, header.extra_size);
+    }
+    else {
+        header.extra_size = 0;
+    }
+
+    ibf_dump_overwrite(dump, &header, sizeof(header), 0);
+
+    str = dump->global_buffer.str;
+    RB_GC_GUARD(dump_obj);
+    return str;
+}
+```
+
+---
+
+[file compile.c:12668]
+
+```c
+static void
+ibf_dump_overwrite(struct ibf_dump *dump, void *buff, unsigned int size, long offset)
+{
+    VALUE str = dump->current_buffer->str;
+    char *ptr = RSTRING_PTR(str);
+    if ((unsigned long)(size + offset) > (unsigned long)RSTRING_LEN(str))
+        rb_bug("ibf_dump_overwrite: overflow");
+    memcpy(ptr + offset, buff, size);
+}
+```
+
+---
+
+`TypedData_Make_Struct`
+
+[file include/ruby/internal/core/rtypeddata.h:483]
+
+```c
+ * Identical to #TypedData_Wrap_Struct,  except it allocates a  new data region
+ * internally instead of taking an existing  one.  The allocation is done using
+ * ruby_calloc().
+```
+
+`TypedData_Wrap_Struct`
+
+[file include/ruby/internal/core/rtypeddata.h:452]
+
+```c
+ * Converts sval, a pointer to your struct, into a Ruby object.
+```
+
+---
+
+[file compile.c:14728]
+
+```c
+static void
+ibf_dump_setup(struct ibf_dump *dump, VALUE dumper_obj)
+{
+    dump->global_buffer.obj_table = NULL; // GC may run before a value is assigned
+    dump->iseq_table = NULL;
+
+    RB_OBJ_WRITE(dumper_obj, &dump->global_buffer.str, rb_str_new(0, 0));
+    dump->global_buffer.obj_table = ibf_dump_object_table_new();
+    dump->iseq_table = st_init_numtable(); /* need free */
+
+    dump->current_buffer = &dump->global_buffer;
+}
+```
+
+---
+
+[file compile.c:12648]
+
+```c
+static ibf_offset_t
+ibf_dump_write(struct ibf_dump *dump, const void *buff, unsigned long size)
+{
+    ibf_offset_t pos = ibf_dump_pos(dump);
+#if SIZEOF_LONG > SIZEOF_INT
+    /* ensure the resulting dump does not exceed UINT_MAX */
+    if (size >= UINT_MAX || pos + size >= UINT_MAX) {
+        rb_raise(rb_eRuntimeError, "dump size exceeds");
+    }
+#endif
+    rb_str_cat(dump->current_buffer->str, (const char *)buff, size);
+    return pos;
+}
+```
+
+
+## Tip 3: Knowledge of the Target Is Important
+
+%large: If you know what the program does or have knowledge of the algorithm, you can read it smoothly.
+
+---
+
+- The CRuby parser consists of `parse.y` and `prism`.  It’s also important to know the name “prism.”
+- Modular GC and mmtk [RubyKaigi 2025](https://rubykaigi.org/2025/presentations/peterzhu2118.html)
+- How does CRuby allocate heap memory?
+- How are instance variables stored?
 
 ## CRuby-Specific Considerations
 
 Things to know to make reading CRuby source code easier:
 
 - The `VALUE` type
-- The `rb_define_method()` function
+- `rb_define_method()` function
 - `insns.def`
 
 ## The `VALUE` Type
 
-It appears all over the place in CRuby’s source code
+%large: It appears all over the place in CRuby’s source code
 
 ```
 % git grep VALUE | wc -l
 34190
 ```
 
----
-
-It represents a Ruby object
+## `VALUE` represents a Ruby object
 
 It has three uses
 
+- As an immediate value. `Integer`, `Flonum`, `Symbol`
+- As a special constant. `true`, `false`, `nil`
 - As a pointer to a Ruby object
-- As an immediate value
-- As a special constant
 
-## Literal Values
+## Immediate Value
 
 | Object         | Structure       | Description                              |
 | -------------- | --------------- | -------------------------                |
 | Integer        | `...xxxxxxx1`   | Small integers in the high-order bits    |
 | Flonum         | `...xxxxxx10`   | Part of a double in a 64-bit environment |
-| Symbol         | `...00001110`   | Symbol object ID                         |
+| Symbol         | `...00001100`   | Symbol object ID                         |
 
 ## Special Constants
 
-| Object  | Value  | C Constant |
-|---------|--------|------------|
-| `false` | `0x00` | `Qfalse`   |
-| `nil`   | `0x08` | `Qnil`     |
-| `true`  | `0x14` | `Qtrue`    |
+| Object  | Value  | Structure | C Constant |
+|---------|--------|-----------|------------|
+| `false` | `0x00` | `...0000` | `Qfalse`   |
+| `nil`   | `0x08` | `...0100` | `Qnil`     |
+| `true`  | `0x14` | `..10100` | `Qtrue`    |
+| `undef` | `0x24` | `.110100` | `Qundef`   |
 
-## `rb_deine_method()` function
+## Pointer
+
+Since the heap allocated for Ruby objects is aligned to 8-byte boundaries, the lower 3 bits are always `000`.
+
+![](images/8bytes_alignment.png)
+
+## `rb_define_method()` function
 
 Defining C Functions as Ruby Methods
 
@@ -121,17 +372,55 @@ ISeq instructions are defined
 
 Various other files are generated from this file
 
+```c
+/* Get local variable (pointed by `idx' and `level').
+     'level' indicates the nesting depth from the current block.
+ */
+DEFINE_INSN
+getlocal
+(lindex_t idx, rb_num_t level)
+()
+(VALUE val)
+{
+    val = *(vm_get_ep(GET_EP(), level) - idx);
+    RB_DEBUG_COUNTER_INC(lvar_get);
+    (void)RB_DEBUG_COUNTER_INC_IF(lvar_get_dynamic, level > 0);
+}
+```
+
+## ここまでのまとめ
+
+- Aim to get a rough overview first
+- Narrow down the areas you need to read
+
+---
+
+- Identify sections you can skip
+- Start with the Purpose
+- Knowledge of the Target Is Important
+
+---
+
+%large: That said,
+I don't really know anything about that...
+
 ## The Ultimate Secret
 
-%huge: AI
+![w30](images/secret.png)
 
-I learned about the `VALUE` type from Gemini
+## The Ultimate Secret
+
+![w30](images/ai.png)
+
+---
+
+%large: I learned about the `VALUE` type from Gemini
 
 ## Claude Code
 
 - Can be run in the source code repository
   - Can lock the code version
-- Set the language to “gal-speak”
+- Set the language to “gal-speak”(ギャル語)
 
 ## What I Learned Using Claude Code
 
@@ -277,13 +566,11 @@ vm_search_cc(const VALUE klass, const struct rb_callinfo * const ci)
 - The second call uses `call_data->cc`.
 - If a different `call_data` is used, the callcache is retrieved from `RCLASS_WRITABLE_CC_TBL` and stored in `call_data`.
 
----
-
-図を入れる
-
 ## Object Shape
 
 Data structures for managing instance variables (`ivar`)
+
+It was introduced at RubyKaigi 2022 https://rubykaigi.org/2022/presentations/jemmaissroff.html#day2
 
 ## How `ivar`s are managed
 
@@ -314,12 +601,11 @@ struct RObject {
 
 `ivar` is stored in `as.ary`
 
-## Generation of `ivar`
+## Generating `ivar`
 
 `ivar` is generated dynamically
 
 For example, if there is a class like the one below, simply calling `MyClass.new` will not create `@bar`
-`as.ary` に `ivar` が保存される
 
 ```ruby
 class MyClass
@@ -363,11 +649,20 @@ struct rb_shape {
 
 ---
 
-```
-root
-└── shape_id = 1 (edge_name: 'foo', next_field_index: 1)
-    └── shape_id = 2 (edge_name: 'bar', next_field_index: 2)
-```
+![w50](images/shape.png)
 
+## Claude Code(Gal) says
 
+**OMG, ivar access is gonna be like, lightning fast now!**
 
+Since we know the Shape, we already know `@bar` is sitting right there at index 1. That means we don't have to waste time doing a table search for the ivar name! Objects from the same class usually set their ivars in the same order, so they can share the same shape—which makes caching work like a charm!
+
+**ivarのアクセスが速くなる〜！**
+
+shapeがわかれば、`@bar` が「インデックス1に入ってる」ってわかるから、ivar名でテーブル検索する必要がない！同じクラスのオブジェクトは同じ順序でivarをセットすることが多いから、同じshapeを共有できて、キャッシュが効きやすいの！
+
+## Conclusion
+
+- I’ve shared a few tips on how to read CRuby source code
+- Let’s use AI to fill in the gaps in our knowledge
+- Gals are literally the GOAT!
