@@ -11,7 +11,7 @@
   - Asakusa.rb
   - PicoPicoRuby
 
-## The CRuby Adventure Book
+## Ruby Adventure Book
 
 ![w60](images/cover_outline_6.8.jpg)
 
@@ -239,6 +239,26 @@ ibf_dump_overwrite(struct ibf_dump *dump, void *buff, unsigned int size, long of
 
 ---
 
+[file compile.c:12648]
+
+```c
+static ibf_offset_t
+ibf_dump_write(struct ibf_dump *dump, const void *buff, unsigned long size)
+{
+    ibf_offset_t pos = ibf_dump_pos(dump);
+#if SIZEOF_LONG > SIZEOF_INT
+    /* ensure the resulting dump does not exceed UINT_MAX */
+    if (size >= UINT_MAX || pos + size >= UINT_MAX) {
+        rb_raise(rb_eRuntimeError, "dump size exceeds");
+    }
+#endif
+    rb_str_cat(dump->current_buffer->str, (const char *)buff, size);
+    return pos;
+}
+```
+
+---
+
 `TypedData_Make_Struct`
 
 [file include/ruby/internal/core/rtypeddata.h:483]
@@ -275,27 +295,6 @@ ibf_dump_setup(struct ibf_dump *dump, VALUE dumper_obj)
     dump->current_buffer = &dump->global_buffer;
 }
 ```
-
----
-
-[file compile.c:12648]
-
-```c
-static ibf_offset_t
-ibf_dump_write(struct ibf_dump *dump, const void *buff, unsigned long size)
-{
-    ibf_offset_t pos = ibf_dump_pos(dump);
-#if SIZEOF_LONG > SIZEOF_INT
-    /* ensure the resulting dump does not exceed UINT_MAX */
-    if (size >= UINT_MAX || pos + size >= UINT_MAX) {
-        rb_raise(rb_eRuntimeError, "dump size exceeds");
-    }
-#endif
-    rb_str_cat(dump->current_buffer->str, (const char *)buff, size);
-    return pos;
-}
-```
-
 
 ## Tip 3: Knowledge of the Target Is Important
 
@@ -339,16 +338,16 @@ It has three uses
 | -------------- | --------------- | -------------------------                |
 | Integer        | `...xxxxxxx1`   | Small integers in the high-order bits    |
 | Flonum         | `...xxxxxx10`   | Part of a double in a 64-bit environment |
-| Symbol         | `...00001100`   | Symbol object ID                         |
+| Symbol         | `...xxxx1100`   | Symbol object ID                         |
 
 ## Special Constants
 
 | Object  | Value  | Structure | C Constant |
 |---------|--------|-----------|------------|
-| `false` | `0x00` | `...0000` | `Qfalse`   |
-| `nil`   | `0x08` | `...0100` | `Qnil`     |
-| `true`  | `0x14` | `..10100` | `Qtrue`    |
-| `undef` | `0x24` | `.110100` | `Qundef`   |
+| `false` | `0x00` | `00000000` | `Qfalse`   |
+| `nil`   | `0x08` | `00000100` | `Qnil`     |
+| `true`  | `0x14` | `00010100` | `Qtrue`    |
+| `undef` | `0x24` | `00110100` | `Qundef`   |
 
 ## Pointer
 
@@ -576,9 +575,8 @@ It was introduced at RubyKaigi 2022 https://rubykaigi.org/2022/presentations/jem
 
 Object creation
 
-```c
-rb_define_alloc_func(rb_cBasicObject, rb_class_allocate_instance);
-```
+
+[file object.c:139]
 
 ```c
 NEWOBJ_OF_WITH_SHAPE(o, struct RObject, klass, flags, rb_shape_root(rb_gc_heap_id_for_size(size)), size, 0);
