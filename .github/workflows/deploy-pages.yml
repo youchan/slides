@@ -28,9 +28,10 @@ jobs:
         run: gem install opal --version 1.8.2
 
       # GitHub Pages serves this repo under /slides/. The output
-      # directory (default: static/) is not committed; it is built here.
+      # directory (default: static/public/) is not committed; it is built here.
       - name: Build with /slides base path
-        run: ruby build.rb --output _site --base-path /slides
+        working-directory: static
+        run: ruby build.rb --output ../_site --base-path /slides
 
       - uses: actions/upload-pages-artifact@v3
         with:

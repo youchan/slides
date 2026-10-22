@@ -1,16 +1,19 @@
 #!/usr/bin/env ruby
-# Builds the whole site from sources into an output directory.
+# Static site generator: builds every talk into a plain static site.
+# Run it from this directory (static/):
 #
-#   ruby build.rb [-o DIR] [-b BASE_PATH]
+#   cd static && ruby build.rb [-o DIR] [-b BASE_PATH]
 #
-# Sources:
+# Sources (paths relative to the repository root, one level up):
 #   slides/<name>/        one directory per talk (slide.md, meta.toml, css/, images/)
-#   templates/            slide.html.erb (per talk) and index.html.erb (talk list)
 #   assets/               shared files copied to the output root (css/, images/)
-#   src/                  Opal sources, compiled into <output>/slide.js
+# Tool files (in static/):
+#   templates/            slide.html.erb (per talk) and index.html.erb (talk list)
+#   slide.rb.erb, gibier2/  Opal sources, compiled into <output>/slide.js
 #
 # Options (environment variables are used as fallbacks):
-#   -o, --output DIR      output directory (OUTPUT_DIR, default: static)
+#   -o, --output DIR      output directory, relative to the current directory
+#                         (OUTPUT_DIR, default: public)
 #   -b, --base-path PATH  URL prefix the site is served under (BASE_PATH,
 #                         default: empty). GitHub Pages serves this repo
 #                         under /slides, so the deploy workflow uses
@@ -23,18 +26,19 @@ require 'optparse'
 
 Encoding.default_external = Encoding::UTF_8 # meta.toml may contain Japanese
 
-ROOT = __dir__
+TOOL_DIR = __dir__                    # static/
+ROOT = File.expand_path('..', TOOL_DIR) # repository root
 MARKER = '.gibier-build'
 
 options = {
-  output: ENV['OUTPUT_DIR'] || 'static',
+  output: ENV['OUTPUT_DIR'] || 'public',
   base_path: ENV['BASE_PATH'] || '',
   opal: true,
 }
 
 OptionParser.new do |opts|
   opts.banner = 'Usage: ruby build.rb [options]'
-  opts.on('-o', '--output DIR', 'Output directory (default: static)') { |v| options[:output] = v }
+  opts.on('-o', '--output DIR', 'Output directory (default: public)') { |v| options[:output] = v }
   opts.on('-b', '--base-path PATH', 'URL prefix, e.g. /slides (default: empty)') { |v| options[:base_path] = v }
   opts.on('--skip-opal', 'Do not compile slide.js') { options[:opal] = false }
 end.parse!
@@ -43,7 +47,7 @@ end.parse!
 base_path = options[:base_path].to_s.strip.delete_suffix('/')
 base_path = "/#{base_path}" unless base_path.empty? || base_path.start_with?('/')
 
-out_dir = File.expand_path(options[:output], ROOT)
+out_dir = File.expand_path(options[:output])
 
 # Minimal reader for the subset of TOML used by meta.toml:
 #   key = 'string' | "string" | ['a', "b", ...]   (# comments allowed)
@@ -69,7 +73,8 @@ end
 
 # --- prepare the output directory ---------------------------------------
 
-protected_dirs = [ROOT, *%w[slides src assets templates .git].map { |d| File.join(ROOT, d) }]
+protected_dirs = [ROOT, TOOL_DIR, File.join(TOOL_DIR, 'templates'), File.join(TOOL_DIR, 'gibier2'),
+                  *%w[slides assets .git].map { |d| File.join(ROOT, d) }]
 if protected_dirs.any? { |d| out_dir == d || d.start_with?(out_dir + '/') }
   abort "refusing to build into #{out_dir}: it contains sources"
 end
@@ -91,7 +96,7 @@ end
 
 # --- talks ------------------------------------------------------------------
 
-slide_template = ERB.new(File.read(File.join(ROOT, 'templates/slide.html.erb')), trim_mode: '-')
+slide_template = ERB.new(File.read(File.join(TOOL_DIR, 'templates/slide.html.erb')), trim_mode: '-')
 
 slides = Dir.glob(File.join(ROOT, 'slides/*/slide.md')).map do |md|
   dir = File.dirname(md)
@@ -120,19 +125,19 @@ end
 # newest first; talks without a date go last
 dated, undated = slides.partition { |s| !s[:date].empty? }
 sorted = dated.sort_by { |s| s[:date] }.reverse + undated.sort_by { |s| s[:name] }
-index_template = ERB.new(File.read(File.join(ROOT, 'templates/index.html.erb')), trim_mode: '-')
+index_template = ERB.new(File.read(File.join(TOOL_DIR, 'templates/index.html.erb')), trim_mode: '-')
 File.write(File.join(out_dir, 'index.html'), index_template.result_with_hash(slides: sorted, base_path: base_path))
 puts 'built index.html'
 
 # --- slide.js (Opal) ----------------------------------------------------------
 
 if options[:opal]
-  src_dir = File.join(ROOT, 'src')
+  src_dir = TOOL_DIR
   slide_rb = File.join(src_dir, 'slide.rb')
   slide_js = File.join(out_dir, 'slide.js')
 
   # Use `opal` from PATH if there is one, otherwise the one bundled by
-  # src/Gemfile (`cd src && bundle install`).
+  # static/Gemfile (`bundle install` in static/).
   in_path = ENV['PATH'].to_s.split(File::PATH_SEPARATOR).any? { |d| File.executable?(File.join(d, 'opal')) }
   env, opal =
     if in_path
@@ -154,7 +159,7 @@ if options[:opal]
         failed to compile slide.js with `#{opal.join(' ')}`.
         Install Opal with either of:
           gem install opal -v 1.8.2
-          (cd src && bundle install)
+          bundle install   (in static/)
       MSG
     end
     puts "built slide.js (#{opal.join(' ')})"
