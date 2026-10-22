@@ -131,10 +131,33 @@ if options[:opal]
   slide_rb = File.join(src_dir, 'slide.rb')
   slide_js = File.join(out_dir, 'slide.js')
 
+  # Use `opal` from PATH if there is one, otherwise the one bundled by
+  # src/Gemfile (`cd src && bundle install`).
+  in_path = ENV['PATH'].to_s.split(File::PATH_SEPARATOR).any? { |d| File.executable?(File.join(d, 'opal')) }
+  env, opal =
+    if in_path
+      [{}, %w[opal]]
+    else
+      [{ 'BUNDLE_GEMFILE' => File.join(src_dir, 'Gemfile') }, %w[bundle exec opal]]
+    end
+
   File.write(slide_rb, ERB.new(File.read(File.join(src_dir, 'slide.rb.erb'))).result_with_hash(base_path: base_path))
   begin
-    system('opal', '-I.', '-c', 'slide.rb', chdir: src_dir, out: slide_js, exception: true)
-    puts 'built slide.js'
+    ok = begin
+      system(env, *opal, '-I.', '-c', 'slide.rb', chdir: src_dir, out: slide_js)
+    rescue Errno::ENOENT
+      false
+    end
+    unless ok
+      FileUtils.rm_f(slide_js)
+      abort <<~MSG
+        failed to compile slide.js with `#{opal.join(' ')}`.
+        Install Opal with either of:
+          gem install opal -v 1.8.2
+          (cd src && bundle install)
+      MSG
+    end
+    puts "built slide.js (#{opal.join(' ')})"
   ensure
     FileUtils.rm_f(slide_rb)
   end
