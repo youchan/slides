@@ -6,3 +6,5 @@ Gemfile.lock
 *.swp
 .ruby-version
 public/wasm/
+static/
+_site/

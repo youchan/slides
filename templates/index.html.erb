@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>Slides</title>
+  </head>
+  <body>
+    <ul>
+<%- slides.each do |slide| -%>
+      <li><a href="./<%= ERB::Util.h(slide[:name]) %>/"><%= ERB::Util.h(slide[:title]) %></a></li>
+<%- end -%>
+    </ul>
+  </body>
+</html>

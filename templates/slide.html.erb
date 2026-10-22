@@ -1,11 +1,17 @@
 <html>
   <head>
+    <meta charset="utf-8">
+    <title><%= ERB::Util.h(slide[:title]) %></title>
+<%- unless slide[:fonts].empty? -%>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+<%- slide[:fonts].each do |font| -%>
+    <link href="<%= ERB::Util.h(font) %>" rel="stylesheet">
+<%- end -%>
+<%- end -%>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/dark.min.css">
-    <link rel="stylesheet" href="/css/highlight.css">
-    <link rel="stylesheet" href="/css/application.css">
+    <link rel="stylesheet" href="<%= base_path %>/css/highlight.css">
+    <link rel="stylesheet" href="<%= base_path %>/css/application.css">
     <link rel="stylesheet" href="./css/custom.css">
   </head>
   <body>
@@ -22,16 +28,15 @@
     </div>
     <script type="module">
       import hljs from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/highlight.min.js';
-      //  and it's easy to individually load additional languages
-      import ruby from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/ruby.min.js';
-      import c from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/c.min.js';
-      hljs.registerLanguage('ruby', ruby);
-      hljs.registerLanguage('c', c);
+<%- slide[:languages].each do |lang| -%>
+      import <%= lang %> from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/<%= lang %>.min.js';
+<%- end -%>
+<%- slide[:languages].each do |lang| -%>
+      hljs.registerLanguage('<%= lang %>', <%= lang %>);
+<%- end -%>
       window.hljs = hljs;
     </script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script type="text/javascript" src="/slide.js"></script>
-
+    <script type="text/javascript" src="<%= base_path %>/slide.js"></script>
   </body>
 </html>
-

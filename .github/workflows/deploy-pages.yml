@@ -27,16 +27,14 @@ jobs:
       - name: Install Opal
         run: gem install opal --version 1.8.2
 
-      # GitHub Pages serves this repo under /slides/, but docs/ is built
-      # with no base path by default so it also works from a plain local
-      # server (ruby -run -e httpd docs). Rebuild with BASE_PATH set for
-      # this deployment.
+      # GitHub Pages serves this repo under /slides/. The output
+      # directory (default: static/) is not committed; it is built here.
       - name: Build with /slides base path
-        run: BASE_PATH=/slides ruby build.rb
+        run: ruby build.rb --output _site --base-path /slides
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: _site
 
   deploy:
     needs: build
