@@ -2,7 +2,7 @@
 # Static site generator: builds every talk into a plain static site.
 # Run it from this directory (static/):
 #
-#   cd static && ruby build.rb [-o DIR] [-b BASE_PATH]
+#   cd static && bundle exec ruby build.rb [-o DIR] [-b BASE_PATH]
 #
 # Sources (paths relative to the repository root, one level up):
 #   slides/<name>/        one directory per talk (slide.md, meta.toml, css/, images/)
@@ -18,7 +18,8 @@
 #                         default: empty). GitHub Pages serves this repo
 #                         under /slides, so the deploy workflow uses
 #                         --base-path /slides.
-#       --skip-opal       do not compile slide.js (templates/assets only)
+#       --skip-opal       do not compile slide.js (templates/assets only;
+#                         Bundler is not needed then)
 
 require 'erb'
 require 'fileutils'
@@ -48,6 +49,26 @@ base_path = options[:base_path].to_s.strip.delete_suffix('/')
 base_path = "/#{base_path}" unless base_path.empty? || base_path.start_with?('/')
 
 out_dir = File.expand_path(options[:output])
+
+# Opal comes from static/Gemfile, so this script runs under Bundler:
+#   cd static && bundle install && bundle exec ruby build.rb
+# Checked before touching the output directory.
+if options[:opal]
+  abort <<~MSG unless defined?(Bundler)
+    build.rb must be run with Bundler (Opal comes from static/Gemfile):
+      cd static && bundle install && bundle exec ruby build.rb
+  MSG
+
+  begin
+    opal_bin = Gem.bin_path('opal', 'opal')
+    opal_version = Gem.loaded_specs['opal']&.version || Gem::Specification.find_by_name('opal').version
+  rescue Gem::LoadError, Gem::Exception
+    abort <<~MSG
+      opal was not found in the bundle (#{ENV['BUNDLE_GEMFILE']}).
+      Add it to static/Gemfile and run `bundle install`.
+    MSG
+  end
+end
 
 # Minimal reader for the subset of TOML used by meta.toml:
 #   key = 'string' | "string" | ['a', "b", ...]   (# comments allowed)
@@ -136,33 +157,15 @@ if options[:opal]
   slide_rb = File.join(src_dir, 'slide.rb')
   slide_js = File.join(out_dir, 'slide.js')
 
-  # Use `opal` from PATH if there is one, otherwise the one bundled by
-  # static/Gemfile (`bundle install` in static/).
-  in_path = ENV['PATH'].to_s.split(File::PATH_SEPARATOR).any? { |d| File.executable?(File.join(d, 'opal')) }
-  env, opal =
-    if in_path
-      [{}, %w[opal]]
-    else
-      [{ 'BUNDLE_GEMFILE' => File.join(src_dir, 'Gemfile') }, %w[bundle exec opal]]
-    end
-
   File.write(slide_rb, ERB.new(File.read(File.join(src_dir, 'slide.rb.erb'))).result_with_hash(base_path: base_path))
   begin
-    ok = begin
-      system(env, *opal, '-I.', '-c', 'slide.rb', chdir: src_dir, out: slide_js)
-    rescue Errno::ENOENT
-      false
-    end
-    unless ok
+    # Run the bundle's opal with this Ruby rather than whatever `opal` is
+    # first in PATH (that could be an rbenv/asdf shim for another Ruby).
+    unless system(RbConfig.ruby, opal_bin, '-I.', '-c', 'slide.rb', chdir: src_dir, out: slide_js)
       FileUtils.rm_f(slide_js)
-      abort <<~MSG
-        failed to compile slide.js with `#{opal.join(' ')}`.
-        Install Opal with either of:
-          gem install opal -v 1.8.2
-          bundle install   (in static/)
-      MSG
+      abort 'failed to compile slide.js with opal'
     end
-    puts "built slide.js (#{opal.join(' ')})"
+    puts "built slide.js (opal #{opal_version})"
   ensure
     FileUtils.rm_f(slide_rb)
   end

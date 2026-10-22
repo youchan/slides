@@ -23,15 +23,14 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.4"
-
-      - name: Install Opal
-        run: gem install opal --version 1.8.2
+          working-directory: static
+          bundler-cache: true # bundle install for static/Gemfile (Opal)
 
       # GitHub Pages serves this repo under /slides/. The output
       # directory (default: static/public/) is not committed; it is built here.
       - name: Build with /slides base path
         working-directory: static
-        run: ruby build.rb --output ../_site --base-path /slides
+        run: bundle exec ruby build.rb --output ../_site --base-path /slides
 
       - uses: actions/upload-pages-artifact@v3
         with:

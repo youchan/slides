@@ -48,7 +48,7 @@ entirely by `static/build.rb`; its output is not committed.
 slides/<name>/      one directory per talk: slide.md, meta.toml, css/, images/
 assets/             shared css/ and images/, copied to the output root
 static/
-  build.rb          the generator (run it from static/)
+  build.rb          the generator (run it from static/ with bundle exec)
   templates/        slide.html.erb (each talk) and index.html.erb (talk list)
   slide.rb.erb, gibier2/   Opal sources, compiled into slide.js
   gh_server.rb      serves the output under /slides like GitHub Pages
@@ -58,24 +58,25 @@ static/
 `fonts` (stylesheet URLs) and `languages` (highlight.js languages, default
 `['ruby']`).
 
-Build (needs Opal: `bundle install` in static/, or `gem install opal -v 1.8.2`):
+Build (Opal comes from static/Gemfile, so always run it with `bundle exec`):
 
 ```sh
 cd static
-ruby build.rb                          # -> static/public/, no base path
-ruby build.rb -o ../docs -b /slides    # any output dir / base path
+bundle install
+bundle exec ruby build.rb                          # -> static/public/, no base path
+bundle exec ruby build.rb -o ../docs -b /slides    # any output dir / base path
 ```
 
 Serve it locally with no base path:
 
 ```sh
-ruby build.rb && ruby -run -e httpd public
+bundle exec ruby build.rb && ruby -run -e httpd public
 ```
 
 Or the way GitHub Pages serves it, under /slides:
 
 ```sh
-ruby build.rb --base-path /slides && ruby gh_server.rb
+bundle exec ruby build.rb --base-path /slides && ruby gh_server.rb
 ```
 
 Open http://localhost:9161/slides/ then you can see the slides.
