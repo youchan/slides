@@ -1,0 +1,105 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ast (2.4.3)
+    base64 (0.3.0)
+    drb (2.2.3)
+    drb-websocket (0.5.5)
+      faye-websocket
+      puma
+      rack (~> 3.0)
+      rackup
+    eventmachine (1.2.7)
+    faye-websocket (0.12.0)
+      eventmachine (>= 0.12.0)
+      websocket-driver (>= 0.8.0)
+    logger (1.7.0)
+    markly (0.12.1)
+    nio4r (2.7.5)
+    opal (1.8.3)
+      ast (>= 2.3.0)
+      base64 (>= 0.2.0)
+      parser (~> 3.0, >= 3.0.3.2)
+    parser (3.3.13.0)
+      ast (~> 2.4.1)
+      racc
+    puma (8.0.2)
+      nio4r (~> 2.0)
+    racc (1.8.1)
+    rack (3.2.7)
+    rackup (2.3.1)
+      rack (>= 3)
+    rake (13.4.2)
+    rouge (4.7.0)
+    ruby_wasm (2.10.1)
+      logger
+    ruby_wasm (2.10.1-aarch64-linux)
+      logger
+    ruby_wasm (2.10.1-aarch64-linux-musl)
+      logger
+    ruby_wasm (2.10.1-arm64-darwin)
+      logger
+    ruby_wasm (2.10.1-x86_64-darwin)
+      logger
+    ruby_wasm (2.10.1-x86_64-linux)
+      logger
+    ruby_wasm (2.10.1-x86_64-linux-musl)
+      logger
+    webrick (1.9.2)
+    websocket-driver (0.8.2)
+      base64
+      websocket-extensions (>= 0.1.0)
+    websocket-extensions (0.1.5)
+
+PLATFORMS
+  aarch64-linux
+  aarch64-linux-musl
+  arm64-darwin
+  ruby
+  x86_64-darwin
+  x86_64-linux
+  x86_64-linux-musl
+
+DEPENDENCIES
+  base64
+  drb
+  drb-websocket
+  markly (~> 0.12.1)
+  opal (~> 1.8)
+  rackup
+  rake
+  rouge (~> 4.5)
+  ruby_wasm
+  webrick
+
+CHECKSUMS
+  ast (2.4.3) sha256=954615157c1d6a382bc27d690d973195e79db7f55e9765ac7c481c60bdb4d383
+  base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b
+  drb (2.2.3) sha256=0b00d6fdb50995fe4a45dea13663493c841112e4068656854646f418fda13373
+  drb-websocket (0.5.5) sha256=cf301cc13535406fd98d2d1b6523d33984ade5abc14a8673a5f57d201c160524
+  eventmachine (1.2.7) sha256=994016e42aa041477ba9cff45cbe50de2047f25dd418eba003e84f0d16560972
+  faye-websocket (0.12.0) sha256=ad9f7dfcd0306d0a13baeee450729657661129af15bb5f38716c242484ab42e1
+  logger (1.7.0) sha256=196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203
+  markly (0.12.1) sha256=fda3a53ec29e349e9c30e34cf9da322aa260d66627f75b2d3a8ad9633e5cbab9
+  nio4r (2.7.5) sha256=6c90168e48fb5f8e768419c93abb94ba2b892a1d0602cb06eef16d8b7df1dca1
+  opal (1.8.3) sha256=a1c987f8eb9e4e400dcd453dc996cad2e4870466cbfba98e2d29b96d5648dfe0
+  parser (3.3.13.0) sha256=e02f9b63c2fe05b0c68f692ba4df89b3cb113b663964f75d988fbebfd6c3deca
+  puma (8.0.2) sha256=c8ed871dfbbe66448ea9ffd46692342d9804d4071522b52b5331b7b6e7b686fb
+  racc (1.8.1) sha256=4a7f6929691dbec8b5209a0b373bc2614882b55fc5d2e447a21aaa691303d62f
+  rack (3.2.7) sha256=93e13e1c24f93556671d85d2d79fa228c3485815c50d7e2f265b5330c6528fb7
+  rackup (2.3.1) sha256=6c79c26753778e90983761d677a48937ee3192b3ffef6bc963c0950f94688868
+  rake (13.4.2) sha256=cb825b2bd5f1f8e91ca37bddb4b9aaf345551b4731da62949be002fa89283701
+  rouge (4.7.0) sha256=dba5896715c0325c362e895460a6d350803dbf6427454f49a47500f3193ea739
+  ruby_wasm (2.10.1) sha256=874e0acb783a8326bfb0db892004816c26963a4276a9f719791a8828e53a05f1
+  ruby_wasm (2.10.1-aarch64-linux) sha256=133ab6ad86ff2942a4dd187ae2af87a42bbb31b42fd1ac82f738cbf658649c17
+  ruby_wasm (2.10.1-aarch64-linux-musl) sha256=b92cfb5168d95837fb051c29e395c65129ef469ddd557f498948d1f20eb5bab7
+  ruby_wasm (2.10.1-arm64-darwin) sha256=f106a9b4d8b273592471005460f8c54d89a8913e4fecb9dbab3bd3fc8c20bbc6
+  ruby_wasm (2.10.1-x86_64-darwin) sha256=40291bed5b48c858317a31437e59d56091edda2f2c498b532238eda4cbf044d4
+  ruby_wasm (2.10.1-x86_64-linux) sha256=728e29dc688246572b56dcef1c7b131431d07865320c9b8434dd1ccdfd63db2b
+  ruby_wasm (2.10.1-x86_64-linux-musl) sha256=c4d16572f9a465e460490d0608e817239c5e0ddfc9553f18db2bcaebecbcdd8d
+  webrick (1.9.2) sha256=beb4a15fc474defed24a3bda4ffd88a490d517c9e4e6118c3edce59e45864131
+  websocket-driver (0.8.2) sha256=97c556b019bf3410b4961002ac501621e9322d3f8a7bc02161a09301cc4c4146
+  websocket-extensions (0.1.5) sha256=1c6ba63092cda343eb53fc657110c71c754c56484aad42578495227d717a8241
+
+BUNDLED WITH
+  4.0.6

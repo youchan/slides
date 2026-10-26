@@ -1,8 +1,12 @@
 #!/usr/bin/env ruby
 # Static site generator: builds every talk into a plain static site.
-# Run it from this directory (static/):
+# Usually run from the repository root through rake:
 #
-#   cd static && bundle exec ruby build.rb [-o DIR] [-b BASE_PATH]
+#   rake build:static [OUTPUT_DIR=DIR] [BASE_PATH=PATH] [SKIP_OPAL=1]
+#
+# or directly (Opal comes from the :static group of the root Gemfile):
+#
+#   bundle exec ruby static/build.rb [-o DIR] [-b BASE_PATH]
 #
 # Sources (paths relative to the repository root, one level up):
 #   slides/<name>/        one directory per talk (slide.md, meta.toml, css/, images/)
@@ -50,13 +54,12 @@ base_path = "/#{base_path}" unless base_path.empty? || base_path.start_with?('/'
 
 out_dir = File.expand_path(options[:output])
 
-# Opal comes from static/Gemfile, so this script runs under Bundler:
-#   cd static && bundle install && bundle exec ruby build.rb
-# Checked before touching the output directory.
+# Opal comes from the :static group of the root Gemfile, so this script
+# runs under Bundler (`rake build:static` does that). Checked before touching the output directory.
 if options[:opal]
   abort <<~MSG unless defined?(Bundler)
-    build.rb must be run with Bundler (Opal comes from static/Gemfile):
-      cd static && bundle install && bundle exec ruby build.rb
+    build.rb must be run with Bundler (Opal comes from the root Gemfile):
+      rake build:static
   MSG
 
   begin
@@ -65,7 +68,7 @@ if options[:opal]
   rescue Gem::LoadError, Gem::Exception
     abort <<~MSG
       opal was not found in the bundle (#{ENV['BUNDLE_GEMFILE']}).
-      Add it to static/Gemfile and run `bundle install`.
+      Add it to the :static group of the root Gemfile and run `bundle install`.
     MSG
   end
 end
