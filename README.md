@@ -62,16 +62,16 @@ Build from the project root with rake. Opal is in the `:static` group of
 the root Gemfile; the task runs `bundle install` first if needed.
 
 ```sh
-rake build:static                                      # -> static/public/, no base path
+rake build:static                                      # -> ./dist/, no base path
 rake build:static BASE_PATH=/slides                    # GitHub Pages style
-rake build:static OUTPUT_DIR=_site BASE_PATH=/slides   # OUTPUT_DIR is relative to the root
+rake build:static OUTPUT_DIR=_site BASE_PATH=/slides   # OUTPUT_DIR is relative to the current dir
 rake build:static SKIP_OPAL=1                          # skip compiling slide.js
 ```
 
 Serve it locally with no base path:
 
 ```sh
-rake build:static && ruby -run -e httpd static/public
+rake build:static && ruby -run -e httpd dist
 ```
 
 Or the way GitHub Pages serves it, under /slides:

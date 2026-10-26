@@ -17,7 +17,7 @@
 #
 # Options (environment variables are used as fallbacks):
 #   -o, --output DIR      output directory, relative to the current directory
-#                         (OUTPUT_DIR, default: public)
+#                         (OUTPUT_DIR, default: dist)
 #   -b, --base-path PATH  URL prefix the site is served under (BASE_PATH,
 #                         default: empty). GitHub Pages serves this repo
 #                         under /slides, so the deploy workflow uses
@@ -36,14 +36,14 @@ ROOT = File.expand_path('..', TOOL_DIR) # repository root
 MARKER = '.gibier-build'
 
 options = {
-  output: ENV['OUTPUT_DIR'] || 'public',
+  output: ENV['OUTPUT_DIR'] || 'dist',
   base_path: ENV['BASE_PATH'] || '',
   opal: true,
 }
 
 OptionParser.new do |opts|
   opts.banner = 'Usage: ruby build.rb [options]'
-  opts.on('-o', '--output DIR', 'Output directory (default: public)') { |v| options[:output] = v }
+  opts.on('-o', '--output DIR', 'Output directory (default: dist)') { |v| options[:output] = v }
   opts.on('-b', '--base-path PATH', 'URL prefix, e.g. /slides (default: empty)') { |v| options[:base_path] = v }
   opts.on('--skip-opal', 'Do not compile slide.js') { options[:opal] = false }
 end.parse!
