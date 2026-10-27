@@ -1,0 +1,405 @@
+require_relative 'marked'
+require_relative 'rouge'
+
+module Gibier
+  module Client
+    class Pages
+      attr_reader :page_num
+
+      def initialize(pages, page_num=0)
+        @pages = pages
+        @page_num = page_num
+      end
+
+      def page(n)
+        @page_num = n
+        current
+      end
+
+      def current
+        @pages[@page_num]
+      end
+
+      def next
+        if @page_num < @pages.length - 1
+          @page_num += 1
+        end
+        current
+      end
+
+      def prev
+        if @page_num > 0
+          @page_num -= 1
+        end
+        current
+      end
+
+      def each(&block)
+        @pages.each(&block)
+      end
+
+      def marshal_dump
+        [@pages, @page_num]
+      end
+
+      def marshal_load(obj)
+        @pages = obj[0]
+        @page_num = obj[1]
+      end
+    end
+
+    module Content
+      def extract_text(node)
+        text = ''
+        case node.type
+        when :text
+          text = text + node.string_content
+        when :strong, :emph
+          text = text + "<span class='strong'>#{extract_text(node.extract_children)}</span>"
+        when :inline_html
+          text = text + node.string_content
+        when :link
+          text = text + "<a href='#{node.url}'>#{extract_text(node.extract_children)}</a>\n"
+        when :codespan
+          text = text + "<code>#{node.string_content}</code>"
+        when :custom_inline
+          node.each do |n|
+            text = text + extract_text(n)
+          end
+        end
+
+        text
+      end
+
+      def extract_content(node)
+        case node.type
+        when :paragraph
+          ParagraphContent.new(node)
+        when :text, :strong, :emph, :codespan
+          TextContent.new(node)
+        when :list
+          ListContent.new(node)
+        when :image
+          ImageContent.new(node)
+        when :code_block
+          CodeContent.new(node)
+        when :link
+          LinkContent.new(node)
+        when :table
+          TableContent.new(node)
+        when :softbreak
+          SoftbreakContent.new(node)
+        end
+      end
+
+      module_function :extract_text, :extract_content
+    end
+
+    class ParagraphContent
+      include Content
+
+      def initialize(node)
+        @contents = []
+        @class_name = nil
+        node.each do |child|
+          content = extract_content(child)
+          if @contents.empty? && content.is_a?(TextContent) && content.class_name
+            @class_name = content.class_name
+            content.clear_class_name
+          end
+          @contents << content
+        end
+      end
+
+      def string_content
+        @contents.map(&:to_html).join
+      end
+
+      def to_html
+        return '' if @contents.length == 0
+        if @class_name
+          <<~CONTENT
+            <p class='#{@class_name}'>
+              #{string_content}
+            </p>
+          CONTENT
+        else
+          <<~CONTENT
+            <p>
+              #{string_content}
+            </p>
+          CONTENT
+        end
+      end
+    end
+
+    class TextContent
+      include Content
+
+      attr_reader :text, :class_name
+
+      def initialize(node)
+        @strong = true if [:strong, :emph].include?(node.type)
+        (@text, @class_name) = extract_class_name(extract_text(node))
+      end
+
+      def extract_class_name(text)
+        if text =~ /\A%\w+:/
+          class_name = text[1...text.index(':')]
+          text = text[(text.index(':') + 1)...text.length]
+          [text, class_name]
+        else
+          [text, nil]
+        end
+      end
+
+      def clear_class_name
+        @class_name = nil
+      end
+
+      def to_html
+        classes = []
+        classes << @class_name if @class_name
+
+        if classes.length > 0
+          "<p class='#{classes.join(' ')}'>#{@text}</p>"
+        else
+          @text
+        end
+      end
+    end
+
+    class ListItemContent
+      include Content
+
+      def initialize(node)
+        @text = ''
+        node.each.map do |child|
+          case child.type
+          when :text, :codespan, :strong, :emph
+            @text += extract_text(child)
+          when :paragraph
+            child.each do |cc|
+              @text += extract_text(cc)
+            end
+          when :list
+            @list_content = ListContent.new(child)
+          end
+        end
+
+        def to_html
+          html = "<li>#{@text}</li>"
+          if @list_content
+            html += "\n" + @list_content.to_html
+          end
+          html
+        end
+      end
+
+    end
+
+    class ListContent
+      include Content
+
+      def initialize(node)
+        @list_items = extract_list(node)
+      end
+
+      def extract_list(node)
+        list_items = []
+        node.each do |li|
+          case li.type
+          when :list_item
+            list_items << ListItemContent.new(li)
+          end
+        end
+        list_items
+      end
+
+      def list_items_html
+        @list_items.map do |li|
+          li.to_html
+        end.join("\n")
+      end
+
+      def to_html
+        "<ul>\n#{list_items_html}\n</ul>"
+      end
+    end
+
+    class ImageContent
+      include Content
+
+      def initialize(node)
+        @url = node.url
+        @caption = extract_text(node.extract_children)
+      end
+
+      def to_html
+        "<div class='#{@caption}'><img src='#{@url}' /></div>"
+      end
+    end
+
+    class LinkContent
+      include Content
+
+      def initialize(node)
+        @url = node.url
+        @content = extract_text(node.extract_children)
+      end
+
+      def to_html
+        "<a href='#{@url}'>#{@content}</a>"
+      end
+    end
+
+    class CodeContent
+      include Content
+
+      def initialize(node)
+        @code = node.string_content
+        @fence_info = node.fence_info
+      end
+
+      def to_html
+        lexer = Rouge::Lexer.find(@fence_info)
+        code_html = if lexer
+          formatter = Rouge::Formatters::HTML.new
+          formatter.format(lexer.lex(@code))
+        else
+          @code.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;').gsub(/\n/, '</br>').gsub(/\s/, '&nbsp;')
+        end
+        "<pre class='highlight'>\n#{code_html}</pre>"
+      end
+    end
+
+    class TableContent
+      include Content
+
+      def initialize(node)
+        @header = node.header
+        @rows = node.rows
+        @align = node.align
+      end
+
+      def align_style(index)
+        case @align[index]
+        when 'left'
+          " style='text-align:left'"
+        when 'center'
+          " style='text-align:center'"
+        when 'right'
+          " style='text-align:right'"
+        else
+          ''
+        end
+      end
+
+      def to_html
+        html = "<table>\n<thead>\n<tr>\n"
+        @header.each_with_index do |cell, i|
+          html += "<th#{align_style(i)}>#{extract_text(cell)}</th>\n"
+        end
+        html += "</tr>\n</thead>\n<tbody>\n"
+        @rows.each do |row|
+          html += "<tr>\n"
+          row.each_with_index do |cell, i|
+            html += "<td#{align_style(i)}>#{extract_text(cell)}</td>\n"
+          end
+          html += "</tr>\n"
+        end
+        html += "</tbody>\n</table>"
+        html
+      end
+    end
+
+    class SoftbreakContent
+      def initialize(node)
+      end
+
+      def to_html
+        '</br>'
+      end
+    end
+
+    class Page
+      include Content
+
+      attr_reader :title
+      attr_reader :id
+
+      def self.from_header(header, page_num)
+        (title, id) = self.extract_id(Content.extract_text(header.extract_children))
+        self.new(title, header.header_level, id || "page#{page_num}")
+      end
+
+      def self.empty(page_num)
+        self.new('', 0, "page#{page_num}")
+      end
+
+      def initialize(title, level, id)
+        @title = title
+        @level = level
+        @id = id
+        @contents = []
+      end
+
+      def self.extract_id(title)
+        id = nil
+        if m = /\{\#(.+)\}\s*$/.match(title)
+          id = m[1]
+          title = title.sub(/\{\#(.+)\}\s*$/, '')
+        end
+        [title.strip, id]
+      end
+
+      def << node
+        content = extract_content(node)
+        @contents << content if content
+      end
+
+      def contents_html
+        @contents.map do |c|
+          c.to_html
+        end.join("\n")
+      end
+
+      def marshal_dump
+        to_html
+      end
+
+      def to_html
+        @html ||= <<~HTML
+          <div class='page' id='#{id}'>
+          #{"<h#{@level} class='page-header'>#{title}</h#{@level}>" if title.length > 0}
+            <div class='page-content'>
+              #{contents_html}
+            </div>
+          </div>
+        HTML
+      end
+    end
+
+    class Parser
+      def self.parse(content)
+        pages = []
+        doc = Marked.parse(content)
+        doc.each do |node|
+          case node.type
+          when :header
+            page = Page.from_header(node, pages.count + 1)
+
+            pages << page
+          when :hrule
+            page = Page.empty(pages.count + 1)
+
+            pages << page
+          else
+            pages.last << node if pages.last
+          end
+        end
+        Pages.new(pages)
+      end
+    end
+  end
+end

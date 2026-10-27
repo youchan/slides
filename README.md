@@ -39,6 +39,28 @@ bundle exec rackup
 
 Open http://localhost:9161 then you can see the sample slide.
 
+## Development server (no build)
+
+`exe/gibier server` serves every talk straight from its sources, with the
+same URLs as the static build. Nothing has to be built first:
+
+- `slide.md`, `css/`, `images/` and `assets/` are served as they are on disk
+- `slide.js` is compiled with Opal in the server process on first request,
+  and again only when `static/slide.rb.erb` or `lib/gibier/client/` change
+- open pages reload themselves (and keep the current page) when a file they
+  depend on changes
+
+```sh
+bundle install
+exe/gibier server                     # http://localhost:9161/
+exe/gibier server -p 3000             # another port
+exe/gibier server --base-path /slides # http://localhost:9161/slides/, like GitHub Pages
+exe/gibier server --help              # all options
+```
+
+The code is in `lib/gibier/server.rb`. `exe/gibier` uses the repository
+Gemfile, so `bundle exec` is optional.
+
 ## Static build (GitHub Pages)
 
 `static/` is the static site generator. The published site is generated
@@ -50,8 +72,11 @@ assets/             shared css/ and images/, copied to the output root
 static/
   build.rb          the generator (run it with `rake build:static`)
   templates/        slide.html.erb (each talk) and index.html.erb (talk list)
-  slide.rb.erb, gibier2/   Opal sources, compiled into slide.js
+  slide.rb.erb      Opal entry point, compiled into slide.js
   gh_server.rb      serves the output under /slides like GitHub Pages
+lib/gibier/
+  client/           Gibier::Client: Markdown -> pages parser (runs in the browser via Opal)
+  server.rb         the development server (exe/gibier server)
 ```
 
 `meta.toml` keys: `title`, `date` (used to sort the list, newest first),

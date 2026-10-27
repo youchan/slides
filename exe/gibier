@@ -1,0 +1,65 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# gibier - slide tools
+#
+#   exe/gibier server [options]   development server (no build needed)
+#
+# Works with or without `bundle exec`: the repository Gemfile is used either way.
+
+ROOT = File.expand_path('..', __dir__)
+ENV['BUNDLE_GEMFILE'] ||= File.join(ROOT, 'Gemfile')
+require 'bundler/setup'
+$LOAD_PATH.unshift(File.join(ROOT, 'lib'))
+
+require 'optparse'
+
+USAGE = <<~TEXT
+  Usage: gibier <command> [options]
+
+  Commands:
+    server, s    serve the talks from their sources, reloading on change
+    help         show this message
+
+  Run `gibier server --help` for its options.
+TEXT
+
+def server(argv)
+  options = {
+    host: ENV.fetch('GIBIER_HOSTNAME', 'localhost'),
+    port: Integer(ENV.fetch('PORT', '9161')),
+    root: ROOT,
+    base_path: '',
+    live_reload: true,
+    server: nil,
+  }
+
+  OptionParser.new do |opts|
+    opts.banner = 'Usage: gibier server [options]'
+    opts.on('-p', '--port PORT', Integer, "Port (default: #{options[:port]})") { |v| options[:port] = v }
+    opts.on('-o', '--host HOST', "Host to bind (default: #{options[:host]}; 0.0.0.0 for LAN)") { |v| options[:host] = v }
+    opts.on('-b', '--base-path PATH', 'URL prefix, e.g. /slides like GitHub Pages (default: none)') { |v| options[:base_path] = v }
+    opts.on('-r', '--root DIR', 'Repository root with slides/ assets/ static/ (default: this repo)') { |v| options[:root] = v }
+    opts.on('-s', '--server NAME', 'Rack handler, e.g. webrick or puma (default: auto)') { |v| options[:server] = v }
+    opts.on('--[no-]reload', 'Reload open pages when sources change (default: on)') { |v| options[:live_reload] = v }
+    opts.on('-h', '--help', 'Show this message') do
+      puts opts
+      exit
+    end
+  end.parse!(argv)
+
+  require 'gibier/server'
+  Gibier::Server.start(**options)
+rescue OptionParser::ParseError, ArgumentError => e
+  abort "gibier: #{e.message}"
+end
+
+command = ARGV.shift
+case command
+when 'server', 's'
+  server(ARGV)
+when nil, 'help', '-h', '--help'
+  puts USAGE
+else
+  abort "gibier: unknown command '#{command}'\n\n#{USAGE}"
+end

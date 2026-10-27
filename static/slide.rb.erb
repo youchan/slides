@@ -2,7 +2,7 @@
 
 require 'native'
 require 'await'
-require_relative 'gibier2/parser.rb'
+require 'gibier/client/parser' # lib/gibier/client/parser.rb (lib/ is on the Opal load path)
 
 SLIDE_WIDTH = 1920
 SLIDE_HEIGHT = 1080
@@ -25,7 +25,7 @@ end
 def load_slide(slide_name)
   data = $$.fetch("#{BASE_PATH}/#{slide_name}/slide.md").__await__
   content = Native(data).text.__await__
-  Gibier2::Parser.parse(content)
+  Gibier::Client::Parser.parse(content)
 end
 
 height = $$.innerHeight.to_f

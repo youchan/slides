@@ -13,7 +13,9 @@
 #   assets/               shared files copied to the output root (css/, images/)
 # Tool files (in static/):
 #   templates/            slide.html.erb (per talk) and index.html.erb (talk list)
-#   slide.rb.erb, gibier2/  Opal sources, compiled into <output>/slide.js
+#   slide.rb.erb          Opal entry point, compiled into <output>/slide.js
+# Opal library (in lib/, which is put on the Opal load path):
+#   gibier/client/        Gibier::Client, the Markdown -> pages parser used by slide.rb.erb
 #
 # Options (environment variables are used as fallbacks):
 #   -o, --output DIR      output directory, relative to the current directory
@@ -33,6 +35,7 @@ Encoding.default_external = Encoding::UTF_8 # meta.toml may contain Japanese
 
 TOOL_DIR = __dir__                    # static/
 ROOT = File.expand_path('..', TOOL_DIR) # repository root
+LIB_DIR = File.join(ROOT, 'lib')        # Opal load path (gibier/client/)
 MARKER = '.gibier-build'
 
 options = {
@@ -97,7 +100,7 @@ end
 
 # --- prepare the output directory ---------------------------------------
 
-protected_dirs = [ROOT, TOOL_DIR, File.join(TOOL_DIR, 'templates'), File.join(TOOL_DIR, 'gibier2'),
+protected_dirs = [ROOT, TOOL_DIR, File.join(TOOL_DIR, 'templates'), LIB_DIR,
                   *%w[slides assets .git].map { |d| File.join(ROOT, d) }]
 if protected_dirs.any? { |d| out_dir == d || d.start_with?(out_dir + '/') }
   abort "refusing to build into #{out_dir}: it contains sources"
@@ -164,7 +167,7 @@ if options[:opal]
   begin
     # Run the bundle's opal with this Ruby rather than whatever `opal` is
     # first in PATH (that could be an rbenv/asdf shim for another Ruby).
-    unless system(RbConfig.ruby, opal_bin, '-I.', '-c', 'slide.rb', chdir: src_dir, out: slide_js)
+    unless system(RbConfig.ruby, opal_bin, '-I', LIB_DIR, '-c', 'slide.rb', chdir: src_dir, out: slide_js)
       FileUtils.rm_f(slide_js)
       abort 'failed to compile slide.js with opal'
     end
