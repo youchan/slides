@@ -6,7 +6,6 @@ require 'gibier/client/parser' # lib/gibier/client/parser.rb (lib/ is on the Opa
 
 SLIDE_WIDTH = 1920
 SLIDE_HEIGHT = 1080
-BASE_PATH = <%= base_path.inspect %>
 
 uri = $$.location.toString
 base_uri = uri.sub(/#\d+$/, '')
@@ -22,8 +21,10 @@ def update_page(page, top, left, zoom)
   page_el.style.zoom = "#{zoom}"
 end
 
-def load_slide(slide_name)
-  data = $$.fetch("#{BASE_PATH}/#{slide_name}/slide.md").__await__
+# slide.md sits next to the talk's index.html, so a relative URL works under
+# any base path (and keeps a released engine independent of where it is served).
+def load_slide
+  data = $$.fetch('slide.md').__await__
   content = Native(data).text.__await__
   Gibier::Client::Parser.parse(content)
 end
@@ -57,9 +58,8 @@ $$.document.addEventListener('keydown') do |event|
   $$.location = pages.page_num == 0 ? base_uri : base_uri + "##{pages.page_num}"
 end
 
-m = uri.match(/\/(?<event>\w+)\/(?<num>#\d+)?$/)
-pages = load_slide(m[:event]).__await__
-num = m[:num]&.sub(/\A#/, '').to_i || 0
+pages = load_slide.__await__
+num = uri[/#(\d+)\z/, 1].to_i
 page = pages.page(num)
 update_page(page, top, left, zoom)
 

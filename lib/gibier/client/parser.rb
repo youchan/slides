@@ -330,17 +330,25 @@ module Gibier
 
       def self.from_header(header, page_num)
         (title, id) = self.extract_id(Content.extract_text(header.extract_children))
-        self.new(title, header.header_level, id || "page#{page_num}")
+        level = header.header_level
+        self.new(title, level, id || "page#{page_num}", page_class(level, page_num))
       end
 
       def self.empty(page_num)
         self.new('', 0, "page#{page_num}")
       end
 
-      def initialize(title, level, id)
+      # h1 on the first page is the cover; h1 anywhere else starts a section.
+      def self.page_class(level, page_num)
+        return nil unless level == 1
+        page_num == 1 ? 'cover' : 'section-header'
+      end
+
+      def initialize(title, level, id, page_class = nil)
         @title = title
         @level = level
         @id = id
+        @page_class = page_class
         @contents = []
       end
 
@@ -370,7 +378,7 @@ module Gibier
 
       def to_html
         @html ||= <<~HTML
-          <div class='page' id='#{id}'>
+          <div class='#{['page', @page_class].compact.join(' ')}' id='#{id}'>
           #{"<h#{@level} class='page-header'>#{title}</h#{@level}>" if title.length > 0}
             <div class='page-content'>
               #{contents_html}

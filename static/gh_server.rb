@@ -1,10 +1,9 @@
 # Serves the built site under /slides, the same way GitHub Pages does.
 #
-#   rake build:static BASE_PATH=/slides
-#   ruby static/gh_server.rb [DIR]   # DIR defaults to ./dist
+#   ruby static/gh_server.rb [DIR]   # DIR defaults to ./docs
 require 'webrick'
 
-dir = ARGV[0] || 'dist'
+dir = ARGV[0] || 'docs'
 server = WEBrick::HTTPServer.new(Port: 9161)
 server.mount '/slides', WEBrick::HTTPServlet::FileHandler, dir
 

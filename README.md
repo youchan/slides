@@ -63,49 +63,71 @@ Gemfile, so `bundle exec` is optional.
 
 ## Static build (GitHub Pages)
 
-`static/` is the static site generator. The published site is generated
-entirely by `static/build.rb`; its output is not committed.
+The site is built by hand into `docs/` and committed; GitHub Pages serves
+that folder (Settings → Pages → Source: "Deploy from a branch", `main` /
+`/docs`). Nothing is built on GitHub Actions.
 
 ```
 slides/<name>/      one directory per talk: slide.md, meta.toml, css/, images/
-assets/             shared css/ and images/, copied to the output root
+assets/             shared css/ and images/ (the engine stylesheet and its images)
 static/
-  build.rb          the generator (run it with `rake build:static`)
+  build.rb          the generator (run it through rake)
   templates/        slide.html.erb (each talk) and index.html.erb (talk list)
-  slide.rb.erb      Opal entry point, compiled into slide.js
-  gh_server.rb      serves the output under /slides like GitHub Pages
+  slide.rb.erb      Opal entry point of the engine (slide.js)
+  gh_server.rb      serves docs/ under /slides like GitHub Pages
 lib/gibier/
   client/           Gibier::Client: Markdown -> pages parser (runs in the browser via Opal)
+  meta.rb           meta.toml reader
   server.rb         the development server (exe/gibier server)
+docs/               the published site (generated, committed)
+  index.html        talk list
+  js/slide_<version>.js, .css   released engines
+  images/           assets/images/
+  <name>/           a built talk
 ```
 
-`meta.toml` keys: `title`, `date` (used to sort the list, newest first),
-`fonts` (stylesheet URLs) and `languages` (highlight.js languages, default
-`['ruby']`).
+### Engine versions
 
-Build from the project root with rake. Opal is in the `:static` group of
-the root Gemfile; the task runs `bundle install` first if needed.
+The engine (slide.js and its stylesheet, `assets/css/highlight.css` +
+`application.css`) is released under a version name you choose, and each
+talk is pinned to one, so improving the engine never breaks an older talk.
 
 ```sh
-rake build:static                                      # -> ./dist/, no base path
-rake build:static BASE_PATH=/slides                    # GitHub Pages style
-rake build:static OUTPUT_DIR=_site BASE_PATH=/slides   # OUTPUT_DIR is relative to the current dir
-rake build:static SKIP_OPAL=1                          # skip compiling slide.js
+rake engine:release VERSION=v1           # -> docs/js/slide_v1.js, docs/js/slide_v1.css
+rake engine:release VERSION=v1 FORCE=1   # overwrite v1 (existing versions are refused otherwise)
+rake engine:list                         # released versions
 ```
 
-Serve it locally with no base path:
+### meta.toml
+
+```toml
+title = 'RubyKaigi 2026'
+date = '2026-04'                 # sorts the list, newest first
+engine_version = 'v1'            # required for the static build
+fonts = ['https://...']          # stylesheet URLs (optional)
+languages = ['ruby', 'c']        # highlight.js languages (default ['ruby'])
+```
+
+### Building talks
 
 ```sh
-rake build:static && ruby -run -e httpd dist
+rake build SLIDE=RubyKaigi2026           # one talk, then docs/index.html
+rake build SLIDE=RubyKaigi2026,RubyKaigi2025
+rake build ALL=1                         # every talk, each with its own engine_version
+rake build:index                         # docs/index.html only
 ```
 
-Or the way GitHub Pages serves it, under /slides:
+`rake build` fails if `engine_version` is missing or that version has not
+been released. It replaces only `docs/<name>/`; other talks and released
+engines are left alone. The talk list shows every talk that has been built
+into `docs/`. All URLs are relative, so the output works under any base path.
+
+Check it locally the way GitHub Pages serves it, then commit `docs/`:
 
 ```sh
-rake build:static BASE_PATH=/slides && ruby static/gh_server.rb
+ruby static/gh_server.rb                 # http://localhost:9161/slides/
+git add docs && git commit
 ```
 
-Open http://localhost:9161/slides/ then you can see the slides.
-
-GitHub Pages is deployed by `.github/workflows/deploy-pages.yml`
-(Settings → Pages → Source must be "GitHub Actions").
+The development server (`exe/gibier server`) always uses the engine being
+developed, whatever `engine_version` says.

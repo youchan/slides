@@ -1,31 +1,38 @@
 #!/usr/bin/env ruby
-# Static site generator: builds every talk into a plain static site.
-# Usually run from the repository root through rake:
+# frozen_string_literal: true
+
+# Static site generator for GitHub Pages (served from docs/ on main).
+# Usually run through rake from the repository root:
 #
-#   rake build:static [OUTPUT_DIR=DIR] [BASE_PATH=PATH] [SKIP_OPAL=1]
+#   rake engine:release VERSION=v1     # snapshot the engine as docs/js/slide_v1.{js,css}
+#   rake build SLIDE=RubyKaigi2026     # build one talk (or several: SLIDE=a,b)
+#   rake build ALL=1                   # rebuild every talk, each with its own engine
+#   rake build:index                   # regenerate docs/index.html only
+#   rake engine:list                   # released engine versions
 #
 # or directly (Opal comes from the :static group of the root Gemfile):
 #
-#   bundle exec ruby static/build.rb [-o DIR] [-b BASE_PATH]
+#   bundle exec ruby static/build.rb [-o DIR] release VERSION [--force]
+#   bundle exec ruby static/build.rb [-o DIR] build NAME... | --all
+#   bundle exec ruby static/build.rb [-o DIR] index
+#   bundle exec ruby static/build.rb [-o DIR] versions
 #
-# Sources (paths relative to the repository root, one level up):
-#   slides/<name>/        one directory per talk (slide.md, meta.toml, css/, images/)
-#   assets/               shared files copied to the output root (css/, images/)
-# Tool files (in static/):
-#   templates/            slide.html.erb (per talk) and index.html.erb (talk list)
-#   slide.rb.erb          Opal entry point, compiled into <output>/slide.js
-# Opal library (in lib/, which is put on the Opal load path):
-#   gibier/client/        Gibier::Client, the Markdown -> pages parser used by slide.rb.erb
+# Engine versions
+#   An engine is slide.js (static/slide.rb.erb + lib/gibier/client/, compiled
+#   with Opal) plus its stylesheet (assets/css/highlight.css + application.css).
+#   `release` writes them as <out>/js/slide_<VERSION>.js and .css and never
+#   overwrites an existing version unless --force is given. Each talk picks
+#   its engine with `engine_version = '<VERSION>'` in slides/<name>/meta.toml,
+#   so a new engine never changes a talk that was built with an older one.
 #
-# Options (environment variables are used as fallbacks):
-#   -o, --output DIR      output directory, relative to the current directory
-#                         (OUTPUT_DIR, default: dist)
-#   -b, --base-path PATH  URL prefix the site is served under (BASE_PATH,
-#                         default: empty). GitHub Pages serves this repo
-#                         under /slides, so the deploy workflow uses
-#                         --base-path /slides.
-#       --skip-opal       do not compile slide.js (templates/assets only;
-#                         Bundler is not needed then)
+# Output (<out> defaults to docs/ in the repository root):
+#   index.html            talk list: every talk built into <out>
+#   .nojekyll             serve files as they are (no Jekyll on GitHub Pages)
+#   js/slide_<V>.{js,css} released engines
+#   images/               assets/images/ (used by the engine stylesheet)
+#   <name>/               a talk: slide.md, css/, images/, ... and index.html
+#
+# All URLs in the output are relative, so it works under any base path.
 
 require 'erb'
 require 'fileutils'
@@ -33,148 +40,197 @@ require 'optparse'
 
 Encoding.default_external = Encoding::UTF_8 # meta.toml may contain Japanese
 
-TOOL_DIR = __dir__                    # static/
+TOOL_DIR = __dir__                      # static/
 ROOT = File.expand_path('..', TOOL_DIR) # repository root
 LIB_DIR = File.join(ROOT, 'lib')        # Opal load path (gibier/client/)
-MARKER = '.gibier-build'
+SLIDES_DIR = File.join(ROOT, 'slides')
+ASSETS_DIR = File.join(ROOT, 'assets')
+ENGINE_CSS = %w[css/highlight.css css/application.css].freeze # concatenated in this order
+VERSION_FORMAT = /\A[0-9A-Za-z][\w.-]*\z/
+NAME_FORMAT = /\A[\w.-]+\z/
 
-options = {
-  output: ENV['OUTPUT_DIR'] || 'dist',
-  base_path: ENV['BASE_PATH'] || '',
-  opal: true,
-}
+$LOAD_PATH.unshift(LIB_DIR)
+require 'gibier/meta'
 
-OptionParser.new do |opts|
-  opts.banner = 'Usage: ruby build.rb [options]'
-  opts.on('-o', '--output DIR', 'Output directory (default: dist)') { |v| options[:output] = v }
-  opts.on('-b', '--base-path PATH', 'URL prefix, e.g. /slides (default: empty)') { |v| options[:base_path] = v }
-  opts.on('--skip-opal', 'Do not compile slide.js') { options[:opal] = false }
-end.parse!
+def fail!(message)
+  abort "build: #{message}"
+end
 
-# "/slides/", "slides" -> "/slides"; "" or "/" -> ""
-base_path = options[:base_path].to_s.strip.delete_suffix('/')
-base_path = "/#{base_path}" unless base_path.empty? || base_path.start_with?('/')
+options = { output: File.join(ROOT, 'docs'), force: false, all: false }
+parser = OptionParser.new do |opts|
+  opts.banner = <<~TEXT
+    Usage: ruby build.rb [options] release VERSION
+           ruby build.rb [options] build NAME... | --all
+           ruby build.rb [options] index
+           ruby build.rb [options] versions
+  TEXT
+  opts.on('-o', '--output DIR', 'Output directory (default: docs/ in the repository)') { |v| options[:output] = v }
+  opts.on('-f', '--force', 'release: overwrite an existing version') { options[:force] = true }
+  opts.on('-a', '--all', 'build: every talk in slides/') { options[:all] = true }
+end
+parser.parse!
 
-out_dir = File.expand_path(options[:output])
+OUT_DIR = File.expand_path(options[:output])
+JS_DIR = File.join(OUT_DIR, 'js')
 
-# Opal comes from the :static group of the root Gemfile, so this script
-# runs under Bundler (`rake build:static` does that). Checked before touching the output directory.
-if options[:opal]
-  abort <<~MSG unless defined?(Bundler)
-    build.rb must be run with Bundler (Opal comes from the root Gemfile):
-      rake build:static
-  MSG
+protected_dirs = [ROOT, TOOL_DIR, LIB_DIR, SLIDES_DIR, ASSETS_DIR, File.join(ROOT, '.git')]
+if protected_dirs.any? { |d| OUT_DIR == d || d.start_with?("#{OUT_DIR}/") || OUT_DIR.start_with?("#{SLIDES_DIR}/") }
+  fail! "refusing to build into #{OUT_DIR}: it contains sources"
+end
 
+def engine_files(version)
+  %w[js css].to_h { |ext| [ext.to_sym, File.join(JS_DIR, "slide_#{version}.#{ext}")] }
+end
+
+def released_versions
+  Dir.glob(File.join(JS_DIR, 'slide_*.js')).map { |f| File.basename(f, '.js').delete_prefix('slide_') }.sort
+end
+
+def prepare_output
+  FileUtils.mkdir_p(OUT_DIR)
+  nojekyll = File.join(OUT_DIR, '.nojekyll')
+  File.write(nojekyll, '') unless File.exist?(nojekyll)
+end
+
+# --- release: compile the engine -----------------------------------------------
+
+def compile_slide_js
   begin
-    opal_bin = Gem.bin_path('opal', 'opal')
-    opal_version = Gem.loaded_specs['opal']&.version || Gem::Specification.find_by_name('opal').version
-  rescue Gem::LoadError, Gem::Exception
-    abort <<~MSG
-      opal was not found in the bundle (#{ENV['BUNDLE_GEMFILE']}).
-      Add it to the :static group of the root Gemfile and run `bundle install`.
+    require 'opal'
+  rescue LoadError
+    fail! <<~MSG.chomp
+      opal is not available. Run through rake (it uses the :static group of the root Gemfile):
+        rake engine:release VERSION=...
     MSG
   end
+
+  # The engine is location independent (it fetches ./slide.md), so the
+  # template gets no base path.
+  source = ERB.new(File.read(File.join(TOOL_DIR, 'slide.rb.erb'))).result_with_hash(base_path: '')
+  builder = Opal::Builder.new
+  builder.append_paths(LIB_DIR)
+  builder.build('opal')
+  builder.build_str(source, 'slide.rb')
+  [builder.to_s, Opal::VERSION]
 end
 
-# Minimal reader for the subset of TOML used by meta.toml:
-#   key = 'string' | "string" | ['a', "b", ...]   (# comments allowed)
-def read_meta(path)
-  return {} unless File.exist?(path)
+def release(version, force:)
+  fail! "invalid version name #{version.inspect} (letters, digits, '.', '_', '-')" unless version.match?(VERSION_FORMAT)
 
-  File.readlines(path, chomp: true).each_with_object({}) do |line, meta|
-    line = line.sub(/\s+#.*\z/, '').strip
-    next if line.empty? || line.start_with?('#')
-
-    key, value = line.split('=', 2).map(&:strip)
-    raise "#{path}: cannot parse line: #{line}" unless key && value
-
-    meta[key] =
-      if value.start_with?('[')
-        value.scan(/'([^']*)'|"([^"]*)"/).map { |a, b| a || b }
-      else
-        value[/\A'([^']*)'\z/, 1] || value[/\A"([^"]*)"\z/, 1] or
-          raise "#{path}: unsupported value for #{key}: #{value}"
-      end
+  files = engine_files(version)
+  if !force && files.values.any? { |f| File.exist?(f) }
+    fail! "engine #{version} is already released (#{files[:js]}); pick another name, or --force (FORCE=1) to overwrite it"
   end
+
+  js, opal_version = compile_slide_js
+  css = ENGINE_CSS.map do |path|
+    "/* #{path} */\n#{File.read(File.join(ASSETS_DIR, path))}\n"
+  end.join("\n")
+
+  prepare_output
+  FileUtils.mkdir_p(JS_DIR)
+  File.write(files[:js], "/* gibier engine #{version} (opal #{opal_version}) */\n#{js}\n")
+  File.write(files[:css], "/* gibier engine #{version} */\n#{css}")
+
+  # Shared images referenced by the engine stylesheet (../images/ from js/).
+  # Added or updated, never removed, so older engines keep finding theirs.
+  images = File.join(ASSETS_DIR, 'images')
+  FileUtils.cp_r(File.join(images, '.'), File.join(OUT_DIR, 'images')) if Dir.exist?(images)
+
+  puts "released engine #{version}: #{files[:js]} (opal #{opal_version}), #{files[:css]}"
 end
 
-# --- prepare the output directory ---------------------------------------
+# --- build: one talk -------------------------------------------------------------
 
-protected_dirs = [ROOT, TOOL_DIR, File.join(TOOL_DIR, 'templates'), LIB_DIR,
-                  *%w[slides assets .git].map { |d| File.join(ROOT, d) }]
-if protected_dirs.any? { |d| out_dir == d || d.start_with?(out_dir + '/') }
-  abort "refusing to build into #{out_dir}: it contains sources"
+# Editor droppings are not published (vim swap/backup files, .DS_Store, ...)
+def skip_entry?(name)
+  name.start_with?('.') || name.end_with?('~') || name.match?(/\.sw[a-p]\z/) || name == 'meta.toml'
 end
 
-if Dir.exist?(out_dir) && !Dir.empty?(out_dir)
-  unless File.exist?(File.join(out_dir, MARKER))
-    abort "refusing to clean #{out_dir}: it is not empty and was not created by build.rb"
-  end
-  FileUtils.rm_rf(Dir.glob(File.join(out_dir, '*'), File::FNM_DOTMATCH).reject { |p| %w[. ..].include?(File.basename(p)) })
-end
-FileUtils.mkdir_p(out_dir)
-File.write(File.join(out_dir, MARKER), "generated by build.rb; this directory is wiped on every build\n")
-
-# --- shared assets --------------------------------------------------------
-
-Dir.children(File.join(ROOT, 'assets')).sort.each do |entry|
-  FileUtils.cp_r(File.join(ROOT, 'assets', entry), out_dir)
-end
-
-# --- talks ------------------------------------------------------------------
-
-slide_template = ERB.new(File.read(File.join(TOOL_DIR, 'templates/slide.html.erb')), trim_mode: '-')
-
-slides = Dir.glob(File.join(ROOT, 'slides/*/slide.md')).map do |md|
-  dir = File.dirname(md)
-  name = File.basename(dir)
-  meta = read_meta(File.join(dir, 'meta.toml'))
-  {
-    name: name,
-    title: meta['title'] || name,
-    date: meta['date'] || '',
-    fonts: meta['fonts'] || [],
-    languages: meta['languages'] || ['ruby'],
-    dir: dir,
-  }
-end
-
-slides.each do |slide|
-  dest = File.join(out_dir, slide[:name])
+def copy_tree(src, dest)
   FileUtils.mkdir_p(dest)
-  Dir.children(slide[:dir]).reject { |e| e == 'meta.toml' }.each do |entry|
-    FileUtils.cp_r(File.join(slide[:dir], entry), dest)
-  end
-  File.write(File.join(dest, 'index.html'), slide_template.result_with_hash(slide: slide, base_path: base_path))
-  puts "built #{slide[:name]}/"
-end
+  Dir.children(src).each do |entry|
+    next if skip_entry?(entry)
 
-# newest first; talks without a date go last
-dated, undated = slides.partition { |s| !s[:date].empty? }
-sorted = dated.sort_by { |s| s[:date] }.reverse + undated.sort_by { |s| s[:name] }
-index_template = ERB.new(File.read(File.join(TOOL_DIR, 'templates/index.html.erb')), trim_mode: '-')
-File.write(File.join(out_dir, 'index.html'), index_template.result_with_hash(slides: sorted, base_path: base_path))
-puts 'built index.html'
-
-# --- slide.js (Opal) ----------------------------------------------------------
-
-if options[:opal]
-  src_dir = TOOL_DIR
-  slide_rb = File.join(src_dir, 'slide.rb')
-  slide_js = File.join(out_dir, 'slide.js')
-
-  File.write(slide_rb, ERB.new(File.read(File.join(src_dir, 'slide.rb.erb'))).result_with_hash(base_path: base_path))
-  begin
-    # Run the bundle's opal with this Ruby rather than whatever `opal` is
-    # first in PATH (that could be an rbenv/asdf shim for another Ruby).
-    unless system(RbConfig.ruby, opal_bin, '-I', LIB_DIR, '-c', 'slide.rb', chdir: src_dir, out: slide_js)
-      FileUtils.rm_f(slide_js)
-      abort 'failed to compile slide.js with opal'
+    from = File.join(src, entry)
+    if File.directory?(from)
+      copy_tree(from, File.join(dest, entry))
+    else
+      FileUtils.cp(from, File.join(dest, entry))
     end
-    puts "built slide.js (opal #{opal_version})"
-  ensure
-    FileUtils.rm_f(slide_rb)
   end
 end
 
-puts "done: #{out_dir} (base path #{base_path.inspect})"
+def slide_names
+  Dir.glob(File.join(SLIDES_DIR, '*', 'slide.md')).map { |md| File.basename(File.dirname(md)) }.sort
+end
+
+def check_slide(name)
+  dir = File.join(SLIDES_DIR, name)
+  fail! "no such talk: slides/#{name}/slide.md" unless name.match?(NAME_FORMAT) && File.file?(File.join(dir, 'slide.md'))
+
+  slide = Gibier::Meta.slide_info(dir)
+  version = slide[:engine_version]
+  if version.nil? || version.empty?
+    fail! "slides/#{name}/meta.toml has no engine_version (released: #{released_versions.join(', ').then { |v| v.empty? ? 'none' : v }})"
+  end
+
+  missing = engine_files(version).values.reject { |f| File.exist?(f) }
+  unless missing.empty?
+    fail! "slides/#{name}: engine #{version} is not released (missing #{missing.join(', ')}); " \
+          "run `rake engine:release VERSION=#{version}` first"
+  end
+  slide
+end
+
+def build(names)
+  slides = names.map { |name| check_slide(name) } # validate everything before writing anything
+  template = ERB.new(File.read(File.join(TOOL_DIR, 'templates/slide.html.erb')), trim_mode: '-')
+
+  prepare_output
+  slides.each do |slide|
+    dest = File.join(OUT_DIR, slide[:name])
+    FileUtils.rm_rf(dest)
+    copy_tree(slide[:dir], dest)
+    html = template.result_with_hash(
+      slide: slide,
+      engine_js: "../js/slide_#{slide[:engine_version]}.js",
+      engine_css: ["../js/slide_#{slide[:engine_version]}.css"],
+    )
+    File.write(File.join(dest, 'index.html'), html)
+    puts "built #{slide[:name]}/ (engine #{slide[:engine_version]})"
+  end
+end
+
+# --- index: the talk list ----------------------------------------------------------
+
+# Lists every talk built into the output that still has a source in slides/.
+def build_index
+  prepare_output
+  slides = slide_names
+           .select { |name| File.file?(File.join(OUT_DIR, name, 'index.html')) }
+           .map { |name| Gibier::Meta.slide_info(File.join(SLIDES_DIR, name)) }
+  template = ERB.new(File.read(File.join(TOOL_DIR, 'templates/index.html.erb')), trim_mode: '-')
+  File.write(File.join(OUT_DIR, 'index.html'), template.result_with_hash(slides: Gibier::Meta.sort(slides), base_path: ''))
+  puts "built index.html (#{slides.size} talks)"
+end
+
+# --- main ----------------------------------------------------------------------------
+
+command = ARGV.shift
+case command
+when 'release'
+  version = ARGV.shift or fail!("release needs a VERSION\n#{parser.banner}")
+  release(version, force: options[:force])
+when 'build'
+  names = options[:all] ? slide_names : ARGV
+  fail! "build needs talk names (or --all)\n#{parser.banner}" if names.empty?
+  build(names)
+  build_index
+when 'index'
+  build_index
+when 'versions'
+  puts released_versions
+else
+  abort parser.help
+end

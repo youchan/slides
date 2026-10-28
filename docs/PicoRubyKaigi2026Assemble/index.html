@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>PicoRubyKaigi 2026 Assemble</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/dark.min.css">
+    <link rel="stylesheet" href="../js/slide_Gibier2-alpha.css">
+    <link rel="stylesheet" href="./css/custom.css">
+  </head>
+  <body>
+    <div class="gibier">
+      <div class="background">
+        <div class="background-filter">
+          <div class="slide-control">
+            <div class="page-back"></div>
+            <div class="page-foward"></div>
+            <div class="slide" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module">
+      import hljs from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/highlight.min.js';
+      import ruby from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/ruby.min.js';
+      import c from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/c.min.js';
+      hljs.registerLanguage('ruby', ruby);
+      hljs.registerLanguage('c', c);
+      window.hljs = hljs;
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script type="text/javascript" src="../js/slide_Gibier2-alpha.js"></script>
+  </body>
+</html>

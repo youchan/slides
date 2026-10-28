@@ -10,8 +10,9 @@
 <%- end -%>
 <%- end -%>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/dark.min.css">
-    <link rel="stylesheet" href="<%= base_path %>/css/highlight.css">
-    <link rel="stylesheet" href="<%= base_path %>/css/application.css">
+<%- engine_css.each do |href| -%>
+    <link rel="stylesheet" href="<%= ERB::Util.h(href) %>">
+<%- end -%>
     <link rel="stylesheet" href="./css/custom.css">
   </head>
   <body>
@@ -37,6 +38,6 @@
       window.hljs = hljs;
     </script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script type="text/javascript" src="<%= base_path %>/slide.js"></script>
+    <script type="text/javascript" src="<%= ERB::Util.h(engine_js) %>"></script>
   </body>
 </html>

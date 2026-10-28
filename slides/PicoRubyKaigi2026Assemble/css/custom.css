@@ -12,9 +12,15 @@
 
 .page {
   background-image: url("../images/background-body.png");
-  background-color: #fff;
+  background-size: auto 100%;
+  background-position: center;
+  background-repeat: no-repeat;
   color: #222;
   font-family: "DotGothic16", sans-serif;
+}
+
+.page.section-header {
+  background-image: url("../images/background-title.png");
 }
 
 .page code, .page pre {
@@ -66,11 +72,11 @@
 }
 
 #cover .page-header {
-  top: 12%;
+  top: 20%;
 }
 
 .slide .page-header {
-  margin-top: 80px;
+  margin-top: 22px;
   width: 80%;
   left: 0;
   right: 0;
@@ -86,7 +92,6 @@ h1 {
 
 h2 {
   font-family: "Zen Kaku Gothic New", sans-serif;
-  font-size: 180%;
   color: #202020;
   padding: 13px 13px 13px 100px;
   box-sizing: border-box;
@@ -120,13 +125,11 @@ h2::before {
 #cover .author {
   position: relative;
   float: right;
-  margin-top: 3em;
   right: 3em;
 }
 
 #cover .icon {
   position: relative;
-  top: 10px;
   left: 30em; 
 }
 

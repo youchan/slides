@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 # Development server: serves the talks straight from the sources so edits
-# show up without running `rake build:static`.
+# show up without running `rake build`.
 #
 #   exe/gibier server            # http://localhost:9161/
 #
-# What it serves (same URL layout as the static build in static/build.rb):
+# What it serves (the talks are laid out as in the static build, static/build.rb,
+# but every talk uses the engine being developed rather than its engine_version):
 #   /                      talk list (static/templates/index.html.erb)
 #   /<name>/               a talk    (static/templates/slide.html.erb)
 #   /<name>/<path>         slides/<name>/<path> (slide.md, css/, images/, ...)
@@ -19,35 +20,9 @@
 require 'erb'
 require 'json'
 require 'rack'
+require_relative 'meta'
 
 module Gibier
-  # Minimal reader for the subset of TOML used by meta.toml:
-  #   key = 'string' | "string" | ['a', "b", ...]   (# comments allowed)
-  # Kept in step with read_meta in static/build.rb.
-  module Meta
-    module_function
-
-    def read(path)
-      return {} unless File.exist?(path)
-
-      File.readlines(path, chomp: true, encoding: 'UTF-8').each_with_object({}) do |line, meta|
-        line = line.sub(/\s+#.*\z/, '').strip
-        next if line.empty? || line.start_with?('#')
-
-        key, value = line.split('=', 2).map(&:strip)
-        raise "#{path}: cannot parse line: #{line}" unless key && value
-
-        meta[key] =
-          if value.start_with?('[')
-            value.scan(/'([^']*)'|"([^"]*)"/).map { |a, b| a || b }
-          else
-            value[/\A'([^']*)'\z/, 1] || value[/\A"([^"]*)"\z/, 1] or
-              raise "#{path}: unsupported value for #{key}: #{value}"
-          end
-      end
-    end
-  end
-
   class Server
     DEFAULT_ROOT = File.expand_path('../..', __dir__)
     STATUS_PATH = '/__gibier/status'
@@ -146,16 +121,7 @@ module Gibier
     end
 
     def slide_info(name)
-      dir = File.join(@slides_dir, name)
-      meta = Meta.read(File.join(dir, 'meta.toml'))
-      {
-        name: name,
-        title: meta['title'] || name,
-        date: meta['date'] || '',
-        fonts: meta['fonts'] || [],
-        languages: meta['languages'] || ['ruby'],
-        dir: dir,
-      }
+      Meta.slide_info(File.join(@slides_dir, name))
     end
 
     def serve_slide(env, name, rest)
@@ -168,14 +134,17 @@ module Gibier
     end
 
     def render_index
-      slides = slide_names.map { |name| slide_info(name) }
-      dated, undated = slides.partition { |s| !s[:date].empty? }
-      sorted = dated.sort_by { |s| s[:date] }.reverse + undated.sort_by { |s| s[:name] }
+      sorted = Meta.sort(slide_names.map { |name| slide_info(name) })
       with_reload(template('index.html.erb').result_with_hash(slides: sorted, base_path: @base_path), nil)
     end
 
     def render_slide(name)
-      html = template('slide.html.erb').result_with_hash(slide: slide_info(name), base_path: @base_path)
+      # Always the engine being developed (meta.toml's engine_version is for the static build).
+      html = template('slide.html.erb').result_with_hash(
+        slide: slide_info(name),
+        engine_js: "#{@base_path}/slide.js",
+        engine_css: ["#{@base_path}/css/highlight.css", "#{@base_path}/css/application.css"],
+      )
       with_reload(html, name)
     end
 

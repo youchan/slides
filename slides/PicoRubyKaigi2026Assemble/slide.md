@@ -1,7 +1,7 @@
 # PicoRubyで作るPicoRuby開発環境{#cover}
 
 %author: youchan
-%icon
+![icon](images/youchan_square.jpeg)
 
 ## About Me
 
@@ -13,11 +13,9 @@
   - Asakusa.rb
   - PicoPicoRuby
 
----
-
 # PicoRubyKaigi 2026 Assembly  🎉
 
-# みんなー！PicoRuby(FemtoRuby)をビルドしてるかーい？
+# みんなー！</br>PicoRuby(FemtoRuby)をビルドしてるかーい？
 
 ## ビルドしたことあるひと～ :raise_hand:
 
