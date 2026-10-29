@@ -7,13 +7,13 @@
 
 - youchan
 - ANDPAD Inc.
-  - PicoRubyKaigi 2026 Assembly suponsor
+  - PicoRubyKaigi 2026 Assemble suponsor
 - Author of [Gibier2](https://github.com/youchan/gibier2)
 - Member of
   - Asakusa.rb
   - PicoPicoRuby
 
-# PicoRubyKaigi 2026 Assembly  🎉
+# PicoRubyKaigi 2026 Assemble  🎉
 
 # みんなー！</br>PicoRuby(FemtoRuby)をビルドしてるかーい？
 
@@ -27,18 +27,30 @@
 
 ## マイコンの開発イメージ
 
+- C言語で開発
+- PCからビルドされたイメージをマイコンにアップロード
 - いろいろなセンサーやらデバイスやらが繋がっている
-- C言語で開発!
 
 ## PicoRubyを使えばRubyでマイコンの開発ができる！
 
 ![Rubyで開発ができる](images/picoruby-development.jpeg)
 
-# C言語が必要なこともある
+## PicoRubyでの開発イメージ
 
-## mrbgemsが存在しないデバイス
+- PicoRuby(mruby) or FemtoRuby(mruby/c) VMをマイコンにアップロード
+  - PicoRuby/FemtoRubyでパーサー/コンパイラを持っている
+- Rubyのコードをマイコンにアップロード
+- マイコンとターミナルをつないでRubyのコードを編集
+- **mrbgems**でセンサーやデバイスを制御
+  - C言語が必要なところもmrbgemsで
+
+# C言語が必要なところもある
+
+## さまざまなデバイス
 
 ![deviceがたくさん](images/devices.jpeg)
+
+mrbgemsが存在しないデバイスも存在する
 
 ## タイミングがシビアなデバイス
 
@@ -48,6 +60,7 @@
 
 ![mrbgems](images/mrbgems.png)
 
+# Cでの開発にはビルドが必要
 
 ## ビルドは結構面倒
 
