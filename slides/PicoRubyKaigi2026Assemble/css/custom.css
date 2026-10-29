@@ -137,10 +137,19 @@ h2::before {
   width: 128px;
 }
 
-.books img {
-  margin: auto;
+img {
+  margin: 200px 0 auto;
   display: block;
-  width: 80%;
+  width: 90%;
+}
+
+.picoride {
+  font-size: 160%;
+}
+
+#picoride .strong {
+  color: red;
+  font-size: 140%;
 }
 
 .QR img {

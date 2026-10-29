@@ -17,42 +17,48 @@
 
 # みんなー！</br>PicoRuby(FemtoRuby)をビルドしてるかーい？
 
-## ビルドしたことあるひと～ :raise_hand:
+# ビルドしたことあるひと～ 🙋
 
-## なぜビルドが必要なのか？
+# なぜビルドが必要なのか？
 
-みなさんマイコンの開発したことあります？
-Rubyだけでマイコンの開発をできるのがPicoRubyのよさ
-でも世の中そんなに甘くはないのだよ
-誰かが用意してくれたエコシステムに乗るのはよいこと
-でも、いろいろなものが繋がるのがマイコンの醍醐味でもある
-PicoRubyのコミュニティがさまざまなmrbgemsを開発していて、今すぐ使えるデバイスも沢山あります。
-でも世の中には沢山のデバイスが転がっている(デバイスが沢山ある写真や図を参照)
-インタフェースによってRubyだけで使えるものもあるけど、C言語で開発する必要がある場合もあります。
-また、タイミングのシビアなデバイスの場合はC言語でドライバを書く必要があることもあります。
-そしてそれがマイコンの醍醐味でもあります。
+## みなさんマイコンの開発したことありますか？
 
-PicoRubyではmrbgemsがC言語との橋渡し
-ちょうどCRubyにおけるC-extensionのようなもの
-でも、CRubyと違うのはPicoRubyではC言語での開発が必要になるケースがよくあるということ
+![マイコンの開発イメージ](images/mcu-development.jpeg)
 
-(例として学習リモコンがいい)
+## マイコンの開発イメージ
 
-そして、mrbgemsをC言語で開発するにはビルドが必要なのだよ
+- いろいろなセンサーやらデバイスやらが繋がっている
+- C言語で開発!
 
-## でもビルドは結構面倒
+## PicoRubyを使えばRubyでマイコンの開発ができる！
 
-まず、ボードによってビルド環境が異なる Raspberry-PI pico/ESP-32
-gccやMakeなどの言語処理系、ビルドエコシステムのインストールが必要
-ボード毎のライブラリや開発環境が必要(ESP-32の場合、espressif)
-それらのバージョン違いなどでビルドが失敗することもよくある
+![Rubyで開発ができる](images/picoruby-development.jpeg)
 
-## PicoRubyの開発のマナーも覚える必要があるよ！
+# C言語が必要なこともある
 
-じゃあ、mrbgemsどうやって開発するの？
-(実演)
+## mrbgemsが存在しないデバイス
 
-知ってしまえば簡単なんだけど、初心者にはやさしくないね
+![deviceがたくさん](images/devices.jpeg)
+
+## タイミングがシビアなデバイス
+
+![赤外線リモコン](images/ir-remocon.png)
+
+## PicoRubyではmrbgemsがC言語との橋渡し
+
+![mrbgems](images/mrbgems.png)
+
+
+## ビルドは結構面倒
+
+- ボードによってビルド環境が異なる Raspberry-PI pico/ESP-32
+- gccやMakeなどの言語処理系、ビルドエコシステムのインストールが必要
+- ボード毎のライブラリや開発環境が必要(ESP-32の場合、espressif)
+- それらのバージョン違いなどでビルドが失敗することもよくある
+
+# じゃあmrbgemsどうやって開発するの？(実演)
+
+# 知ってしまえば簡単なんだけど、初心者にはやさしくないね
 
 ## これまでのPicoRubyのエコシステム
 
@@ -61,9 +67,9 @@ gccやMakeなどの言語処理系、ビルドエコシステムのインスト�
 - Installer for raspberry-pi
 - debugger (now!)
 
-## PicoRIDE
+## PicoRIDE{#picoride}
 
-**PicoR**uby **I**ntegrated **D**evelopment **E**nvironment
+%picoride: **PicoR**uby **I**ntegrated **D**evelopment **E**nvironment
 
 ## PicoRIDEにできること
 
@@ -73,7 +79,7 @@ gccやMakeなどの言語処理系、ビルドエコシステムのインスト�
 - PicoRubyのデバイスへのインストール(ESP-32)
   - RaspPI picoはイメージの作成
 
-## Demo
+# Demo
 
 ## 後半はfunicularについて
 
